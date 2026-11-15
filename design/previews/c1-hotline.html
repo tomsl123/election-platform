@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>C1 · The Hotline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+/* C1 · THE HOTLINE — the red telephone to the Bureau of Counting.
+   Lift the receiver, dial your opinion on a rotary dial, hang up to send. Nothing can be tapped. */
+:root { --red:#c8201a; --cream:#efe4cc; --blk:#141210; --D:min(300px,74vw,46vh); }
+* { box-sizing:border-box; margin:0; }
+html, body { height:100%; overflow:hidden; background:var(--cream); color:var(--blk); font-family:"Special Elite", "Courier New", monospace;
+  -webkit-user-select:none; user-select:none; -webkit-tap-highlight-color:transparent; }
+.big { font-family:"Anton", Impact, sans-serif; text-transform:uppercase; letter-spacing:.03em; }
+.wall { position:fixed; inset:0; overflow:hidden; display:grid; grid-template-columns:1fr 1fr; align-items:center; background:
+  radial-gradient(circle, rgba(20,18,16,.16) 1px, transparent 1.6px) 0 0 / 7px 7px,
+  repeating-conic-gradient(from -34deg at 12% 108%, var(--red) 0 7deg, var(--cream) 7deg 14deg); }
+.wall::before { content:""; position:absolute; inset:0; background:radial-gradient(90% 80% at 70% 50%, rgba(239,228,204,.93) 30%, rgba(239,228,204,.55) 70%, transparent); pointer-events:none; }
+.band { position:absolute; left:-10%; right:-10%; bottom:9%; height:74px; background:var(--blk); transform:rotate(-7deg); display:grid; place-items:center start; padding-left:13%; color:var(--cream); font:400 clamp(22px,3.6vw,42px) "Anton", sans-serif; letter-spacing:.08em; white-space:nowrap; box-shadow:0 12px 0 var(--red); }
+.tube { position:absolute; left:0; right:0; top:8px; height:26px; z-index:1; border-block:2px solid rgba(20,18,16,.75); background:linear-gradient(rgba(255,255,255,.75), rgba(255,255,255,.15) 40%, rgba(120,150,170,.25)); overflow:hidden; }
+.cap { position:absolute; left:-70px; top:1px; width:58px; height:20px; border-radius:10px; background:linear-gradient(#f3d98a, #b58a2c 60%, #6e5210); box-shadow:inset 0 0 0 2px rgba(0,0,0,.25); }
+.cap.go { animation:shoot .85s cubic-bezier(.5,0,.9,.6) forwards; } @keyframes shoot { to { transform:translateX(calc(100vw + 140px)); } }
+
+/* ── the voice and the directory ── */
+.left { position:relative; z-index:3; padding:56px 0 0 5%; display:grid; gap:16px; align-content:center; max-width:460px; justify-self:end; width:100%; }
+.voice { display:grid; grid-template-columns:38px 1fr; gap:12px; align-items:center; padding:12px 16px; min-height:74px; background:var(--blk); color:var(--cream); box-shadow:8px 8px 0 var(--red); transform:rotate(-1.5deg); }
+.voice svg { width:36px; fill:var(--red); }
+.voice p { font-size:clamp(15px,2.2vw,19px); line-height:1.25; text-transform:uppercase; }
+.voice p::after { content:"▌"; animation:cur 1s steps(2) infinite; } @keyframes cur { 50% { opacity:0; } }
+.dir { background:#f9f2df; padding:14px 16px 12px; box-shadow:0 0 0 3px var(--blk), 8px 8px 0 var(--blk); transform:rotate(1deg); opacity:0; transition:opacity .4s; }
+.live .dir { opacity:1; }
+.dir h3 { display:flex; align-items:baseline; gap:10px; font:400 26px/1 "Anton", sans-serif; text-transform:uppercase; padding-bottom:8px; border-bottom:4px solid var(--blk); }
+.dir h3 b { background:var(--red); color:var(--cream); padding:2px 8px; font-weight:400; }
+.dir h3 small { margin-left:auto; font:400 12px "Special Elite", monospace; text-transform:uppercase; }
+.dir ul { list-style:none; padding:0; }
+.dir li { display:grid; grid-template-columns:26px 1fr auto 26px; gap:10px; align-items:center; height:36px; border-bottom:1px dashed rgba(20,18,16,.5); font-size:16px; }
+.dir li .sym { width:22px; height:22px; display:block; } .dir li small { font-size:11px; opacity:.65; }
+.pick { width:24px; height:24px; border:2.5px solid var(--blk); display:grid; place-items:center; font:400 20px/1 "Anton", sans-serif; color:transparent; }
+.dir li.on .pick { color:var(--cream); background:var(--red); border-color:var(--red); animation:slam .18s cubic-bezier(.6,0,1,.4); } @keyframes slam { from { transform:scale(2.6); opacity:0; } }
+.dir li.on b { text-decoration:underline; text-decoration-color:var(--red); text-decoration-thickness:3px; }
+
+/* ── the telephone ── */
+.right { position:relative; z-index:3; display:grid; place-items:center; padding-top:40px; }
+.phone { position:relative; width:calc(var(--D) + 70px); height:calc(var(--D) + 56px); margin-top:64px; border-radius:38% 38% 16% 16% / 26% 26% 10% 10%; display:grid; place-items:center;
+  background:radial-gradient(circle at 32% 16%, #ff6a58, var(--red) 46%, #7a0d09); box-shadow:0 24px 30px rgba(20,10,5,.5), inset 0 -10px 0 rgba(0,0,0,.2), inset 0 4px 0 rgba(255,255,255,.3); }
+.phone.ring { animation:ring .09s linear infinite alternate; } @keyframes ring { to { transform:translateX(3px) rotate(.6deg); } }
+.cradle { position:absolute; left:16%; right:16%; top:-16px; height:30px; display:flex; justify-content:space-between; }
+.cradle i { width:44px; height:30px; border-radius:8px 8px 0 0; background:linear-gradient(#3a3a3a, #111); }
+.handset { position:absolute; left:50%; top:-62px; width:calc(var(--D) + 96px); margin-left:calc((var(--D) + 96px) / -2); z-index:5; cursor:grab; touch-action:none; outline-offset:6px;
+  transform:translate(var(--hx,0px), var(--hy,0px)) rotate(var(--hr,0deg)); filter:drop-shadow(0 10px 8px rgba(20,10,5,.45)); }
+.handset.snap { transition:transform .45s cubic-bezier(.3,1.2,.5,1); }
+.handset.off { --hx:42%; --hy:-56px; --hr:28deg; }
+.handset.call { animation:call .5s ease-in-out infinite alternate; } @keyframes call { to { filter:drop-shadow(0 0 16px #fff) drop-shadow(0 10px 8px rgba(20,10,5,.45)); } }
+.handset:focus-visible { outline:4px solid var(--blk); }
+.dial { position:relative; width:var(--D); height:var(--D); border-radius:50%; touch-action:none; cursor:grab; margin-top:14px; }
+.plate { position:absolute; inset:3%; border-radius:50%; background:radial-gradient(circle, #2a2623 0 30%, #0d0c0b 31%); box-shadow:inset 0 4px 14px #000; }
+.pl { position:absolute; width:15%; height:15%; margin:-7.5%; border-radius:50%; background:var(--cream); display:grid; place-items:center; }
+.pl .sym { width:66%; height:66%; } .pl.dead { background:#3a3531; }
+.hub { position:absolute; left:50%; top:50%; width:28%; height:28%; margin:-14%; border-radius:50%; background:var(--cream); display:grid; place-items:center; color:var(--red); box-shadow:0 0 0 3px var(--blk); z-index:3; pointer-events:none; }
+.hub .crest { width:52%; }
+.wheel, .stop { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+.wheel { z-index:2; filter:drop-shadow(0 3px 3px rgba(0,0,0,.6)); }
+.stop { z-index:4; }
+
+/* ── telegram ── */
+.gram { position:absolute; left:50%; top:52%; width:min(420px,90vw); z-index:9; padding:16px 16px 14px; background:#f3e6bf; box-shadow:0 0 0 3px var(--blk), 10px 10px 0 var(--red), 0 30px 40px rgba(20,10,5,.5);
+  transform:translate(-50%,120vh) rotate(-5deg); transition:transform .8s cubic-bezier(.2,.8,.2,1); }
+.gram.show { transform:translate(-50%,-50%) rotate(-2deg); }
+.gram h3 { font:400 26px/1 "Anton", sans-serif; display:flex; justify-content:space-between; align-items:center; padding-bottom:8px; border-bottom:4px solid var(--blk); margin-bottom:10px; }
+.gram h3 .crest { width:28px; color:var(--red); }
+.gram p { background:#fbf5e2; padding:5px 8px; margin:5px 0; font-size:15px; text-transform:uppercase; box-shadow:0 1px 2px rgba(0,0,0,.25); width:fit-content; }
+.gram p:nth-child(odd) { margin-left:10px; } .gram code { font:400 22px "Special Elite", monospace; letter-spacing:.06em; color:var(--red); }
+
+@media (orientation:portrait) {
+  .wall { grid-template-columns:1fr; grid-template-rows:auto 1fr; align-items:start; }
+  .left { padding:48px 16px 0; gap:10px; max-width:none; justify-self:stretch; }
+  .voice { min-height:58px; padding:8px 12px; } .dir { padding:8px 12px 6px; } .dir h3 { font-size:20px; } .dir li { height:29px; font-size:15px; }
+  .right { padding-top:0; align-self:end; padding-bottom:max(14px,2vh); } .phone { width:calc(var(--D) + 50px); height:calc(var(--D) + 40px); margin-top:58px; } .dial { margin-top:8px; }
+  .handset { width:calc(var(--D) + 70px); margin-left:calc((var(--D) + 70px) / -2); top:-54px; } .handset.off { --hx:46%; --hy:-30px; --hr:64deg; }
+  .band { display:none; } :root { --D:min(290px,72vw,37vh); }
+}
+@media (prefers-reduced-motion:reduce) { * { animation-duration:.01s !important; transition-duration:.01s !important; } }
+</style>
+</head>
+<body>
+<main class="wall" id="wall">
+  <div class="band">The Bureau is listening.</div>
+  <div class="tube"><i class="cap" id="cap"></i></div>
+  <section class="left">
+    <div class="voice" role="status"><svg viewBox="0 0 36 30"><path d="M2 10h7l11-9v28L9 20H2zM25 8c3 3 3 11 0 14M30 4c5 6 5 16 0 22" stroke="#c8201a" stroke-width="3" fill-opacity="1" stroke-linecap="round"/></svg><p id="say"></p></div>
+    <div class="dir" id="dir"></div>
+  </section>
+  <section class="right">
+    <div class="phone ring" id="phone">
+      <div class="cradle"><i></i><i></i></div>
+      <svg class="handset" id="handset" tabindex="0" role="button" aria-label="Receiver: lift to begin, replace to send" viewBox="0 0 400 96">
+        <path d="M24 30C24 12 44 4 70 8c30 5 44 14 130 14S300 13 330 8c26-4 46 4 46 22v34c0 16-14 24-34 24h-22c-16 0-26-10-28-26-2-14-20-18-92-18s-90 4-92 18c-2 16-12 26-28 26H58c-20 0-34-8-34-24z" fill="#c8201a"/>
+        <path d="M40 26c6-10 24-12 44-8" stroke="#ff8a7a" stroke-width="5" fill="none" stroke-linecap="round"/><ellipse cx="68" cy="74" rx="26" ry="8" fill="#7a0d09"/><ellipse cx="332" cy="74" rx="26" ry="8" fill="#7a0d09"/>
+      </svg>
+      <div class="dial" id="dial" role="group" aria-label="Rotary dial">
+        <div class="plate" id="plate"></div><div class="hub" id="hub"></div>
+        <svg class="wheel" id="wheel" viewBox="-100 -100 200 200"><defs><linearGradient id="chr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4f4f4"/><stop offset=".5" stop-color="#b9b9b9"/><stop offset="1" stop-color="#7d7d7d"/></linearGradient></defs>
+          <path id="wp" fill="url(#chr)" fill-opacity=".93" fill-rule="evenodd"/><circle id="grab" r="18" fill="none" stroke="#fff" stroke-width="3" opacity="0"/></svg>
+        <svg class="stop" viewBox="-100 -100 200 200"><path id="sp" stroke="#f1f1f1" stroke-width="8" stroke-linecap="round"/><path id="sp2" stroke="#8a8a8a" stroke-width="2.5" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+  </section>
+  <div class="gram" id="gram" role="status"></div>
+</main>
+
+<script src="shared.js"></script>
+<script>
+const { $, $$, wait, election: E, sym, crest, sfx, drag, choose, code, chrome } = EP;
+chrome({ code: "C1", name: "The Hotline" });
+
+const wall = $("#wall"), phone = $("#phone"), handset = $("#handset"), dial = $("#dial"), wheel = $("#wheel"), dir = $("#dir"), sayEl = $("#say");
+const sel = {}; let idx = 0, phase = "ringing", busy = false;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+$("#hub").innerHTML = crest();
+
+/* ── dial geometry: six finger holes, counter-clockwise from the finger stop ── */
+const STOP = 62, STEP = 42, R = 66, HR = 15.5, rad = (d) => (d * Math.PI) / 180;
+const holeAng = (i) => STOP - 50 - STEP * i, maxRot = (i) => STOP - 8 - holeAng(i);
+const hole = (i) => ({ x: R * Math.cos(rad(holeAng(i))), y: R * Math.sin(rad(holeAng(i))) });
+let d = "M-97 0a97 97 0 1 0 194 0a97 97 0 1 0-194 0Z";
+for (let i = 0; i < 6; i++) { const h = hole(i); d += `M${h.x - HR} ${h.y}a${HR} ${HR} 0 1 0 ${2 * HR} 0a${HR} ${HR} 0 1 0 ${-2 * HR} 0Z`; }
+d += "M-31 0a31 31 0 1 0 62 0a31 31 0 1 0-62 0Z";
+$("#wp").setAttribute("d", d);
+const sc = Math.cos(rad(STOP)), ss = Math.sin(rad(STOP));
+$("#sp").setAttribute("d", `M${99 * sc} ${99 * ss}L${58 * sc} ${58 * ss}`); $("#sp2").setAttribute("d", `M${96 * sc} ${96 * ss}L${60 * sc} ${60 * ss}`);
+
+/* ── the voice on the line ── */
+let tok = 0;
+async function say(t) { const k = ++tok; sayEl.textContent = ""; for (let i = 0; i < t.length; i++) { if (k !== tok) return; sayEl.textContent += t[i]; if (i % 2 === 0 && t[i] !== " ") sfx.noise(0.015, { vol: 0.07, f: 3200, q: 2 }); await wait(20); } }
+const VOICE = ["Citizen. Name your Prime Minister. Dial one, then dial the tick.", "Shall the Senate elections be held again? Yes or no. Do not improvise.", "JK Days. Dial two Cliffs. Not three. We will know."];
+say("It is for you. Lift the receiver.");
+const ringer = setInterval(() => { if (phase === "ringing") { sfx.tone(1480, 0.5, { vol: 0.07, type: "square" }); sfx.tone(1180, 0.5, { vol: 0.07, type: "square" }); } }, 1500);
+
+function load() {
+  const p = E.points[idx];
+  dir.innerHTML = `<h3><b>${p.no}/3</b>${p.title}<small>${p.max > 1 ? "dial two" : "dial one"}, then &#10003;</small></h3><ul>${p.options.map((o) => `<li data-id="${o.id}"><span style="color:${o.color}">${sym(o.sym)}</span><b>${o.full}</b><small>${o.party}</small><i class="pick">&#10005;</i></li>`).join("")}</ul>`;
+  $("#plate").innerHTML = Array.from({ length: 6 }, (_, i) => {
+    const h = hole(i), o = p.options[i], ok = i === p.options.length;
+    return `<span class="pl ${o || ok ? "" : "dead"}" style="left:${50 + (h.x / 194) * 100}%;top:${50 + (h.y / 194) * 100}%;color:${o ? o.color : "#2f7d55"}">${o ? sym(o.sym) : ok ? sym("yes") : ""}</span>`;
+  }).join("");
+  say(VOICE[idx]);
+}
+const paint = () => { const p = E.points[idx]; $$("li", dir).forEach((li) => li.classList.toggle("on", (sel[p.id] || []).includes(li.dataset.id))); };
+
+function dialled(i) {
+  const p = E.points[idx], n = p.options.length;
+  if (i < n) {
+    const r = choose(sel, p, p.options[i].id);
+    if (r.full) { sfx.buzz(); return say(`Line busy. ${p.max} only. Re-dial one to withdraw it.`); }
+    sfx.click(); paint();
+  } else if (i === n) {
+    if (!(sel[p.id] || []).length) { sfx.buzz(); return say("Dial a choice first. The tick comes after."); }
+    sfx.ding(); idx++;
+    if (idx < E.points.length) load();
+    else { phase = "hangup"; wall.classList.remove("live"); handset.classList.add("call"); say("Recorded. Replace the receiver to send."); }
+  } else { sfx.tick(); say("That hole is not connected. Nice try."); }
+}
+
+/* ── turning the dial: finger in a hole, round to the stop, let go ── */
+let rot = 0, lastA = 0, cur = -1, notch = 0;
+const local = (e) => { const r = dial.getBoundingClientRect(); return { x: ((e.clientX - r.left) / r.width) * 200 - 100, y: ((e.clientY - r.top) / r.height) * 200 - 100 }; };
+const setRot = (v) => { rot = v; wheel.style.transform = `rotate(${v}deg)`; };
+dial.addEventListener("pointerdown", (e) => {
+  if (phase !== "live" || busy) return;
+  const p = local(e); cur = [0, 1, 2, 3, 4, 5].findIndex((i) => Math.hypot(p.x - hole(i).x, p.y - hole(i).y) < HR + 4);
+  if (cur < 0) return;
+  e.preventDefault(); try { dial.setPointerCapture(e.pointerId); } catch {}
+  lastA = Math.atan2(p.y, p.x) * 180 / Math.PI; wheel.style.transition = "none"; setRot(0);
+  const g = $("#grab"), h = hole(cur); g.setAttribute("cx", h.x); g.setAttribute("cy", h.y); g.setAttribute("opacity", 1);
+});
+dial.addEventListener("pointermove", (e) => {
+  if (cur < 0) return;
+  const p = local(e), a = Math.atan2(p.y, p.x) * 180 / Math.PI; let dd = a - lastA; if (dd > 180) dd -= 360; if (dd < -180) dd += 360; lastA = a;
+  setRot(clamp(rot + dd, 0, maxRot(cur)));
+  const n = Math.round(rot / 14); if (n !== notch) { notch = n; sfx.tick(); }
+});
+const release = async () => {
+  if (cur < 0) return; const i = cur, hit = rot >= maxRot(i) - 7, ms = Math.max(120, rot * 4.2); cur = -1; busy = true;
+  $("#grab").setAttribute("opacity", 0);
+  if (hit) sfx.clunk();
+  wheel.style.transition = `transform ${ms}ms linear`; sfx.ratchet(Math.ceil(rot / 12), ms / 1000 / Math.max(1, Math.ceil(rot / 12))); setRot(0);
+  await wait(ms + 40); busy = false; if (hit) dialled(i);
+};
+dial.addEventListener("pointerup", release); dial.addEventListener("pointercancel", release);
+
+/* ── the receiver ── */
+function lift() { clearInterval(ringer); phase = "live"; phone.classList.remove("ring"); handset.classList.add("snap", "off"); handset.style.setProperty("--hx", ""); handset.style.setProperty("--hy", ""); sfx.clunk(); wall.classList.add("live"); load(); }
+async function hangUp() {
+  phase = "done"; handset.classList.remove("off", "call"); handset.classList.add("snap"); handset.style.setProperty("--hx", ""); handset.style.setProperty("--hy", "");
+  await wait(380); sfx.clunk(); sfx.bell(); say("Received. Your opinion will be considered.");
+  await wait(700); $("#cap").classList.add("go"); sfx.whoosh();
+  await wait(1100); const g = $("#gram");
+  g.innerHTML = `<h3 class="big">Telegram<span>${crest()}</span></h3><p>Bureau of Counting to citizen stop</p><p>Three opinions received stop</p><p>Reference <code>${code()}</code> stop</p><p>Keep it stop do not call again stop</p>`;
+  g.classList.add("show"); sfx.ratchet(10, 0.09);
+}
+drag(handset, {
+  when: () => phase === "ringing" || phase === "hangup",
+  start: () => handset.classList.remove("snap"),
+  move: (dx, dy) => { if (phase === "ringing") { handset.style.setProperty("--hx", dx + "px"); handset.style.setProperty("--hy", dy + "px"); } },
+  end: (dx, dy, e, moved) => {
+    if (phase === "ringing") { if (moved && Math.hypot(dx, dy) > 34) return lift(); handset.classList.add("snap"); handset.style.setProperty("--hx", "0px"); handset.style.setProperty("--hy", "0px"); if (!moved) say("Lift it. Do not poke it."); }
+    else if (moved && Math.hypot(dx, dy) > 24) hangUp(); else say("Carry it back to the cradle.");
+  },
+});
+handset.addEventListener("keydown", (e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); if (phase === "ringing") lift(); else if (phase === "hangup") hangUp(); } });
+/* keyboard path for the dial: digits 1-6 dial that hole */
+addEventListener("keydown", (e) => { const i = "123456".indexOf(e.key); if (i >= 0 && phase === "live" && !busy) dialled(i); });
+</script>
+</body>
+</html>

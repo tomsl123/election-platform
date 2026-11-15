@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>B1 · The Postal Kit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Oswald:wght@500;600&family=Caveat:wght@600&display=swap" rel="stylesheet">
+<style>
+/* B1 · THE POSTAL KIT — a postal vote at the kitchen table.
+   Tear the strip, tick with a biro, tuck, seal, postmark, post. */
+:root { --kraft:#c9a26b; --ink:#1d3f8a; --red:#c8201a; --sec:#8fa3b3; --bw:min(400px,92vw); }
+* { box-sizing:border-box; margin:0; }
+html, body { height:100%; overflow:hidden; background:#e9dcc8; color:#22201c; font-family:"Courier Prime", "Courier New", monospace;
+  -webkit-user-select:none; user-select:none; -webkit-tap-highlight-color:transparent; }
+.post { font-family:"Oswald", "Arial Narrow", sans-serif; text-transform:uppercase; letter-spacing:.12em; }
+.hand { font-family:"Caveat", "Segoe Script", cursive; }
+.table { position:fixed; inset:0; overflow:hidden; background:
+  radial-gradient(circle at 82% 16%, transparent 0 46px, rgba(110,70,30,.2) 47px 52px, transparent 54px),
+  radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(60,30,10,.3)),
+  repeating-linear-gradient(0deg, rgba(196,44,44,.42) 0 36px, transparent 36px 72px),
+  repeating-linear-gradient(90deg, rgba(196,44,44,.42) 0 36px, transparent 36px 72px), #f8f2e7; }
+
+/* ── the envelope that arrived ── */
+.mail { position:absolute; left:50%; top:50%; width:min(470px,92vw); aspect-ratio:1.55; transform:translate(-50%,-50%) rotate(-3deg); padding:14px; z-index:10;
+  background:linear-gradient(#d2ad78, #c09a63); box-shadow:0 18px 30px rgba(60,30,10,.45); transition:transform .7s cubic-bezier(.6,0,.4,1), opacity .5s .2s;
+  border:9px solid transparent; border-image:repeating-linear-gradient(-45deg, var(--red) 0 11px, #f4ecdc 11px 22px, #24489a 22px 33px, #f4ecdc 33px 44px) 9; }
+.mail.gone { transform:translate(-50%,130vh) rotate(14deg); opacity:0; }
+.strip { position:absolute; left:-9px; right:-9px; top:16%; height:30px; cursor:grab; touch-action:none; outline-offset:3px;
+  background:repeating-linear-gradient(90deg, rgba(60,35,10,.5) 0 5px, transparent 5px 10px) 0 0 / 100% 2px no-repeat, repeating-linear-gradient(90deg, rgba(60,35,10,.5) 0 5px, transparent 5px 10px) 0 100% / 100% 2px no-repeat; }
+.strip::before { content:""; position:absolute; left:0; top:0; bottom:0; width:calc(var(--p,0) * 100%); background:#3a2a17; box-shadow:inset 0 4px 6px #000; }
+.strip i { position:absolute; left:calc(var(--p,0) * (100% - 74px)); top:-5px; width:74px; height:40px; background:var(--red); color:#fff; display:grid; place-items:center; border-radius:0 20px 20px 0; box-shadow:0 3px 6px rgba(0,0,0,.4); }
+.strip i svg { width:30px; fill:none; stroke:currentColor; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; animation:tug 1.1s ease-in-out infinite; }
+@keyframes tug { 50% { transform:translateX(7px); } }
+.strip:focus-visible, .tab:focus-visible, .gum:focus-visible, .ret:focus-visible { outline:3px solid #24489a; }
+.mail h1 { position:absolute; left:16px; top:6px; font:600 15px "Oswald", sans-serif; letter-spacing:.2em; }
+.mail .stampb { position:absolute; right:14px; bottom:14px; width:76px; height:92px; padding:5px; background:#f4ecdc; color:#2f6b5a;
+  -webkit-mask:radial-gradient(circle at 4px 4px, transparent 3px, #000 3.5px) -4px -4px / 8px 8px; mask:radial-gradient(circle at 4px 4px, transparent 3px, #000 3.5px) -4px -4px / 8px 8px; }
+.stampb div { height:100%; background:linear-gradient(#bfe0d6, #e9f3ee); display:grid; place-items:center; align-content:center; gap:2px; font:600 9px "Oswald", sans-serif; letter-spacing:.14em; }
+.stampb svg { width:38px; }
+.pmk { position:absolute; right:64px; bottom:60px; width:78px; height:78px; border-radius:50%; border:2.5px solid rgba(30,30,30,.6); color:rgba(30,30,30,.7); display:grid; place-items:center; text-align:center; font:600 9px/1.25 "Oswald", sans-serif; letter-spacing:.1em; transform:rotate(-14deg); box-shadow:inset 0 0 0 4px transparent, inset 0 0 0 5.5px rgba(30,30,30,.45); }
+.win { position:absolute; left:18px; bottom:20px; width:56%; padding:12px 14px; background:#f6f1e4; border-radius:8px; box-shadow:inset 0 2px 5px rgba(0,0,0,.3); font-size:14px; line-height:1.35; }
+.win b { display:block; font-size:16px; }
+.mail small { position:absolute; left:18px; top:44%; font-size:12px; opacity:.75; max-width:60%; line-height:1.3; }
+
+/* ── Clifford's note ── */
+.note { position:absolute; left:3%; top:13%; width:176px; padding:16px 14px 18px; background:#fbf0a8; transform:rotate(-5deg) translateX(-140%); transition:transform .6s cubic-bezier(.2,.9,.3,1.1); box-shadow:0 8px 12px rgba(60,30,10,.3); font:600 22px/1.05 "Caveat", cursive; color:#1d3f8a; z-index:2; }
+.kit .note { transform:rotate(-5deg); }
+.note svg { width:30px; height:30px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; vertical-align:-8px; margin-right:6px; }
+.note p { margin-bottom:6px; } .note em { display:block; font-size:18px; margin-top:8px; text-align:right; font-style:normal; opacity:.8; }
+
+/* ── ballot slips ── */
+#spot { position:absolute; left:50%; top:max(54px, 7%); width:var(--bw); margin-left:calc(var(--bw) / -2); z-index:4; }
+.slip { position:relative; background:#fdfcf7; box-shadow:0 10px 18px rgba(60,30,10,.35); transform:rotate(1deg); animation:deal .6s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes deal { from { transform:translate(0,-80vh) rotate(-12deg); } }
+.slip.shake { animation:shake .3s; } @keyframes shake { 25% { translate:-7px 0; } 75% { translate:7px 0; } }
+.slip header { display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--band); cursor:grab; touch-action:none; }
+.slip header .crest { width:30px; flex:none; }
+.slip header div { flex:1; min-width:0; } .slip header small { display:block; font:500 10px "Oswald", sans-serif; letter-spacing:.2em; text-transform:uppercase; opacity:.75; }
+.slip h2 { font:600 22px/1.1 "Oswald", sans-serif; letter-spacing:.06em; text-transform:uppercase; }
+.slip header b { font:600 13px "Oswald", sans-serif; letter-spacing:.14em; padding:3px 8px; border:1.5px solid currentColor; border-radius:12px; white-space:nowrap; }
+.slip > em { display:block; padding:9px 14px 5px; font-size:14px; font-style:normal; }
+.slip ul { list-style:none; padding:0 14px; }
+.slip li { display:grid; grid-template-columns:30px 1fr 56px; gap:10px; align-items:center; height:56px; border-top:1px dashed rgba(34,32,28,.4); }
+.slip li .sym { width:26px; height:26px; display:block; }
+.slip .nm { font-size:17px; font-weight:700; line-height:1.1; } .slip .nm small { display:block; font:500 10.5px "Oswald", sans-serif; letter-spacing:.16em; opacity:.6; margin-top:2px; }
+.oval { position:relative; width:52px; height:32px; border:2px solid #22201c; border-radius:50%; background:#fff; outline-offset:4px; }
+.oval:focus-visible { outline:3px solid #24489a; }
+.oval canvas { position:absolute; left:-10px; top:-14px; width:72px; height:60px; transition:opacity .25s; }
+.oval canvas.rub { opacity:0; }
+.slip footer { display:flex; align-items:center; gap:12px; padding:10px 14px 12px; border-top:1px dashed rgba(34,32,28,.4); }
+.bar { flex:1; height:22px; background:repeating-linear-gradient(90deg, #22201c 0 2px, transparent 2px 5px, #22201c 5px 6px, transparent 6px 10px, #22201c 10px 13px, transparent 13px 15px); opacity:.75; }
+.tab { border:0; height:40px; padding:0 14px; display:flex; align-items:center; gap:8px; cursor:grab; touch-action:none; color:#fff; background:var(--sec); border-radius:6px; box-shadow:0 3px 0 #5d7386; font:600 13px "Oswald", sans-serif; letter-spacing:.14em;
+  transform:scale(0); transition:transform .3s cubic-bezier(.3,1.5,.5,1); }
+.slip.ready .tab { transform:scale(1); }
+.tab svg { width:20px; fill:none; stroke:currentColor; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; animation:tugd 1.1s ease-in-out infinite; }
+@keyframes tugd { 50% { transform:translateY(4px); } }
+
+/* ── the secrecy envelope ── */
+.sec { position:absolute; right:4%; bottom:5%; width:min(300px,74vw); aspect-ratio:1.55; transform:rotate(-5deg) translateY(260%); transition:transform .6s cubic-bezier(.2,.9,.3,1.1); z-index:5; }
+.kit .sec { transform:rotate(-5deg); }
+.sec.want { animation:want .5s ease-in-out infinite alternate; } @keyframes want { to { transform:rotate(-5deg) translateY(-8px); } }
+.sback, .sfront { position:absolute; inset:0; border-radius:3px; }
+.sback { background:repeating-linear-gradient(45deg, #5d7386 0 2px, transparent 2px 7px), repeating-linear-gradient(-45deg, #5d7386 0 2px, transparent 2px 7px), #c9d5de; box-shadow:0 12px 20px rgba(60,30,10,.4); }
+.sfront { z-index:3; top:14%; background:linear-gradient(#9db0bf, #8598a9); display:grid; place-items:center; color:#f4f7fa; text-align:center; }
+.sfront b { font:600 clamp(15px,2.4vw,19px) "Oswald", sans-serif; letter-spacing:.24em; }
+.sfront span { display:block; font-size:12px; opacity:.85; margin-top:2px; }
+.sfront svg { width:34px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; display:block; margin:0 auto 4px; }
+.sflap { position:absolute; left:0; right:0; bottom:86%; height:54%; z-index:1; transform-origin:50% 100%; transition:transform .6s cubic-bezier(.5,0,.3,1);
+  clip-path:polygon(4% 0,96% 0,100% 100%,0 100%); background:repeating-linear-gradient(45deg, #5d7386 0 2px, transparent 2px 7px), repeating-linear-gradient(-45deg, #5d7386 0 2px, transparent 2px 7px), #c9d5de; }
+.sec.shut .sflap { transform:rotateX(180deg); z-index:4; background:linear-gradient(#a9bac7, #93a6b6); }
+.gum { position:absolute; left:6%; right:6%; top:0; height:32%; border:0; cursor:pointer; touch-action:none; display:none; outline-offset:3px;
+  background:linear-gradient(90deg, #f2d98a calc(var(--p,0) * 100%), rgba(255,255,255,.55) 0) ; border-bottom:2px dashed #fff; }
+.sec.full .gum { display:block; animation:glim 1.2s ease-in-out infinite; } @keyframes glim { 50% { filter:brightness(1.3); } }
+.in { position:absolute; left:8%; right:8%; top:20%; height:74%; z-index:2; background:#fdfcf7; border-top:12px solid var(--band); box-shadow:0 1px 3px rgba(0,0,0,.3); transform:translateY(-150%); transition:transform .45s cubic-bezier(.5,0,.6,1); }
+.in.down { transform:translateY(calc(var(--n) * 5px)); }
+.pips { position:absolute; left:50%; bottom:-22px; transform:translateX(-50%); display:flex; gap:6px; z-index:6; }
+.pips i { width:9px; height:9px; border-radius:50%; background:rgba(34,32,28,.25); } .pips i.on { background:#22201c; }
+
+/* ── return envelope, postmark, pillar box ── */
+.ret { position:absolute; left:50%; top:54%; width:min(380px,84vw); aspect-ratio:1.6; margin-left:calc(min(380px,84vw) / -2); padding:14px; z-index:8; cursor:grab; touch-action:none; outline-offset:5px;
+  background:#fbf8ef; box-shadow:0 16px 26px rgba(60,30,10,.4); transform:translate(calc(-100vw + var(--dx,0px)), var(--dy,0px)) rotate(-8deg); transition:transform .7s cubic-bezier(.2,.9,.3,1.05);
+  border:8px solid transparent; border-image:repeating-linear-gradient(-45deg, var(--red) 0 10px, #fbf8ef 10px 20px, #24489a 20px 30px, #fbf8ef 30px 40px) 8; }
+.ret.here { transform:translate(var(--dx,0px), var(--dy,0px)) rotate(-2deg); }
+.ret.held { transition:none; }
+.ret .paid { position:absolute; right:12px; top:12px; padding:6px 9px; border:2px solid #22201c; font:600 11px/1.2 "Oswald", sans-serif; letter-spacing:.14em; text-align:center; }
+.ret .to { position:absolute; left:18%; top:44%; font-size:15px; line-height:1.4; } .ret .to b { font-size:17px; }
+.ret .pmk { right:auto; left:52%; bottom:auto; top:6px; opacity:0; transform:rotate(-14deg) scale(2.4); }
+.ret.marked .pmk { animation:thump .2s cubic-bezier(.6,0,1,.4) forwards; } @keyframes thump { to { opacity:1; transform:rotate(-14deg) scale(1); } }
+.pillar { position:absolute; left:50%; top:0; width:min(340px,80vw); height:min(200px,26vh); margin-left:calc(min(340px,80vw) / -2); z-index:7; transform:translateY(-110%); transition:transform .7s cubic-bezier(.2,.9,.3,1.05);
+  border-radius:0 0 26px 26px; background:linear-gradient(90deg, #8e120d, var(--red) 22%, #e0352e 50%, var(--red) 78%, #8e120d); box-shadow:0 18px 26px rgba(60,10,5,.45), inset 0 -10px 0 rgba(0,0,0,.18); }
+.pillar.down { transform:none; }
+.mouth { position:absolute; left:14%; right:14%; bottom:36%; height:20px; border-radius:4px; background:#150302; box-shadow:0 2px 0 rgba(255,255,255,.25), inset 0 6px 8px #000; }
+.plaque { position:absolute; left:22%; right:22%; bottom:10%; padding:4px; background:#f4ecdc; text-align:center; font:600 10px/1.3 "Oswald", sans-serif; letter-spacing:.14em; border-radius:2px; }
+.pillar .crest { position:absolute; left:50%; top:8%; width:34px; margin-left:-17px; color:#f6c9a8; }
+.pchute { position:fixed; overflow:hidden; pointer-events:none; z-index:9; }
+
+/* ── certificate of posting ── */
+.rec { position:absolute; left:50%; top:56%; width:min(330px,86vw); padding:20px 18px 18px; z-index:12; background:#f7d9dc; text-align:center; box-shadow:0 20px 34px rgba(60,30,10,.45);
+  transform:translate(-50%,120vh) rotate(5deg); transition:transform .8s cubic-bezier(.2,.8,.2,1); border-top:6px dotted #e9dcc8; }
+.rec.show { transform:translate(-50%,-50%) rotate(-2deg); }
+.rec h3 { font:600 17px "Oswald", sans-serif; letter-spacing:.2em; text-transform:uppercase; }
+.rec code { display:block; font:700 21px "Courier Prime", monospace; padding:12px 0; margin:10px 0; border-block:1.5px dashed #22201c; letter-spacing:.06em; }
+.rec p { font-size:13px; line-height:1.35; } .rec .hand { font-size:24px; color:var(--ink); margin-top:10px; transform:rotate(-3deg); }
+.rec .pmk { right:-16px; top:-22px; bottom:auto; background:#f7d9dc; width:64px; height:64px; font-size:7.5px; color:rgba(160,30,25,.8); border-color:rgba(160,30,25,.7); }
+
+@media (max-width:760px) {
+  .note { display:none; }
+  .sec { right:auto; left:50%; margin-left:calc(min(300px,74vw) / -2); bottom:34px; }
+  .slip li { height:50px; } .mail small { display:none; }
+}
+@media (max-height:720px) { .slip li { height:46px; } }
+@media (prefers-reduced-motion:reduce) { * { animation-duration:.01s !important; transition-duration:.01s !important; } }
+</style>
+</head>
+<body>
+<main class="table" id="table">
+  <aside class="note" aria-hidden="true">
+    <p><svg viewBox="0 0 24 24"><path d="M4 13l5 5L20 6"/></svg>Tick it.</p>
+    <p><svg viewBox="0 0 24 24"><path d="M3 7h18v12H3zM3 7l9 7 9-7"/></svg>Seal it.</p>
+    <p><svg viewBox="0 0 24 24"><path d="M6 21V8a6 6 0 0112 0v13zM9 11h6"/></svg>Post it.</p>
+    <em>and wipe your feet.<br>— Grandpa Clifford</em>
+  </aside>
+  <div id="spot"></div>
+  <div class="sec" id="sec">
+    <div class="sback"></div><div class="sflap"><button class="gum" id="gum" aria-label="Seal the envelope: swipe along the gummed edge"></button></div>
+    <div class="sfront"><div><svg viewBox="0 0 34 22"><path d="M2 11c5-8 25-8 30 0-5 8-25 8-30 0z"/><circle cx="17" cy="11" r="4"/><path d="M4 20L30 2"/></svg><b>NOBODY'S BUSINESS</b><span>secrecy envelope</span></div></div>
+    <div class="pips" id="pips"><i></i><i></i><i></i></div>
+  </div>
+  <div class="pillar" id="pillar"><span id="pc"></span><div class="mouth" id="mouth"></div><div class="plaque">NEXT COLLECTION<br>WHEN THE POLLS CLOSE</div></div>
+  <div class="pchute" id="pchute"></div>
+  <div class="ret" id="ret" tabindex="-1" role="button" aria-label="Post the envelope">
+    <div class="paid">POSTAGE PAID<br>USFC POST</div>
+    <div class="pmk">CLIFFSIDE<br>ACRES<br>15 XI 26</div>
+    <div class="to"><b>THE RETURNING OFFICER</b><br>Polling Day Office<br>Cliffside Acres</div>
+  </div>
+  <div class="mail" id="mail">
+    <h1>ELECTORAL MAIL</h1>
+    <div class="strip" id="strip" tabindex="0" role="button" aria-label="Tear the strip to open your voting kit"><i><svg viewBox="0 0 30 16"><path d="M2 8h24M19 2l7 6-7 6"/></svg></i></div>
+    <small>Do not bend. Do not eat.<br>Do not vote twice.</small>
+    <div class="win"><b>THE CITIZEN</b>wherever you are sitting<br>United States of Free Cliffs</div>
+    <div class="pmk">USFC POST<br>ELECTIONS<br>8 XI 26</div>
+    <div class="stampb"><div><svg viewBox="0 0 24 24" fill="currentColor"><path d="M1.8 20.5L9 6.5l3.8 6.4 2.6-3.6 6.8 11.2z"/></svg>FREE CLIFFS<br>POSTAGE</div></div>
+  </div>
+  <div class="rec" id="rec" role="status"></div>
+</main>
+
+<script src="shared.js"></script>
+<script>
+const { $, $$, wait, election: E, sym, crest, sfx, drag, over, centre, ink, choose, code, chrome } = EP;
+chrome({ code: "B1", name: "The Postal Kit" });
+
+const table = $("#table"), spot = $("#spot"), sec = $("#sec"), ret = $("#ret"), pillar = $("#pillar");
+const BAND = ["#f3b9c0", "#bfe0c4", "#bcd3ee"];
+const sel = {}; let idx = 0, busy = true;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+$("#pc").innerHTML = crest();
+
+/* ── tear the strip ── */
+const strip = $("#strip"); let p = 0, opened = false;
+async function open() {
+  if (opened) return; opened = true;
+  strip.style.setProperty("--p", 1); sfx.noise(0.4, { vol: 0.28, f: 2600, q: 0.7, to: 1200 });
+  await wait(300); $("#mail").classList.add("gone"); sfx.paper();
+  await wait(450); table.classList.add("kit"); deal();
+}
+drag(strip, {
+  move: (dx) => { p = clamp(dx / (strip.clientWidth * 0.75), 0, 1); strip.style.setProperty("--p", p); if (Math.random() < 0.35) sfx.scratch(); },
+  end: (dx, dy, e, moved) => { if (!moved || p > 0.55) open(); else { p = 0; strip.style.setProperty("--p", 0); } },
+});
+strip.addEventListener("keydown", (e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); open(); } });
+
+/* ── a ballot slip ── */
+function deal() {
+  const pt = E.points[idx];
+  const slip = document.createElement("article"); slip.className = "slip"; slip.style.setProperty("--band", BAND[idx]); slip.setAttribute("aria-label", pt.title);
+  slip.innerHTML = `<header>${crest()}<div><small>${E.short} postal ballot</small><h2>${pt.title}</h2></div><b>${pt.no} of 3</b></header><em>${pt.ask}</em>
+    <ul>${pt.options.map((o) => `<li data-id="${o.id}"><span style="color:${o.color}">${sym(o.sym)}</span><span class="nm">${o.full}${o.party ? `<small>${o.party}</small>` : ""}</span>
+      <span class="oval" role="checkbox" aria-checked="false" aria-label="${o.full}" tabindex="0"><canvas></canvas></span></li>`).join("")}</ul>
+    <footer><span class="bar"></span><button class="tab" aria-label="Tuck this ballot into the secrecy envelope" tabindex="-1"><svg viewBox="0 0 20 20"><path d="M10 3v13M4 10l6 6 6-6"/></svg>TUCK IN</button></footer>`;
+  spot.append(slip); sfx.paper();
+  const pads = new Map();
+  const ready = () => { const on = (sel[pt.id] || []).length > 0; slip.classList.toggle("ready", on); sec.classList.toggle("want", on); $(".tab", slip).tabIndex = on ? 0 : -1; };
+  const rub = (li) => { const c = $("canvas", li); c.classList.add("rub"); $(".oval", li).setAttribute("aria-checked", "false"); setTimeout(() => { pads.get(li.dataset.id).clear(); c.classList.remove("rub"); }, 260); };
+  async function mark(li, byHand) {
+    if (busy) return;
+    const id = li.dataset.id, pad = pads.get(id), was = (sel[pt.id] || []).includes(id);
+    if (was) { if (byHand) return; choose(sel, pt, id); rub(li); sfx.paper(); ready(); return; }
+    const r = choose(sel, pt, id);
+    if (r.full) { pad.clear(); slip.classList.remove("shake"); void slip.offsetWidth; slip.classList.add("shake"); sfx.buzz(); return; }
+    r.off.forEach((o) => rub($(`li[data-id="${o}"]`, slip)));
+    if (!byHand) { busy = true; pad.clear(); await pad.auto("tick"); busy = false; }
+    $(".oval", li).setAttribute("aria-checked", "true"); ready();
+  }
+  $$("li", slip).forEach((li) => {
+    pads.set(li.dataset.id, ink($("canvas", li), { color: "#1d3f8a", width: 3, alpha: 0.9, when: () => !busy, done: (drew) => mark(li, drew > 24) }));
+    $(".oval", li).addEventListener("keydown", (e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); mark(li, false); } });
+  });
+  const canGo = () => !busy && slip.classList.contains("ready");
+  [$(".tab", slip), $("header", slip)].forEach((grip) => drag(grip, {
+    when: canGo,
+    start: () => { slip.style.animation = "none"; slip.style.transition = "none"; },
+    move: (dx, dy) => (slip.style.transform = `translate(${dx}px,${dy}px) rotate(${1 + dx / 40}deg)`),
+    end: (dx, dy, e, moved) => {
+      if ((!moved && grip.classList.contains("tab")) || over(sec, e.clientX, e.clientY, 40)) return tuck(slip);
+      slip.style.transition = "transform .3s"; slip.style.transform = "rotate(1deg)";
+    },
+  }));
+  $(".tab", slip).addEventListener("keydown", (e) => { if ((e.key === " " || e.key === "Enter") && canGo()) { e.preventDefault(); tuck(slip); } });
+  setTimeout(() => (busy = false), 550);
+}
+
+async function tuck(slip) {
+  busy = true; sec.classList.remove("want"); sfx.paper();
+  const a = slip.getBoundingClientRect(), b = sec.getBoundingClientRect(), s = (b.width * 0.8) / a.width;
+  slip.style.animation = "none"; slip.style.transformOrigin = "50% 0"; slip.style.transition = "transform .45s cubic-bezier(.5,0,.3,1), opacity .15s .35s";
+  const cur = new DOMMatrix(getComputedStyle(slip).transform);
+  slip.style.transform = `translate(${cur.e + b.left + b.width / 2 - (a.left + a.width / 2)}px,${cur.f + b.top - a.height * s * 0.9 - a.top}px) scale(${s}) rotate(-5deg)`;
+  slip.style.opacity = "0";
+  await wait(420); slip.remove();
+  const inn = document.createElement("i"); inn.className = "in"; inn.style.cssText = `--band:${BAND[idx]};--n:${idx}`; sec.insertBefore(inn, $(".sfront", sec));
+  await wait(30); inn.classList.add("down"); sfx.paper(); $$("#pips i")[idx].classList.add("on");
+  await wait(450); sfx.tick(); idx++;
+  if (idx < E.points.length) deal(); else { sec.classList.add("full"); $("#gum").focus({ preventScroll: true }); busy = false; }
+}
+
+/* ── seal: swipe along the gum, or tap it ── */
+const gum = $("#gum"); let g = 0, sealed = false;
+async function seal() {
+  if (sealed) return; sealed = true; busy = true;
+  gum.style.setProperty("--p", 1); sec.classList.remove("full"); await wait(150);
+  sec.classList.add("shut"); sfx.paper(); await wait(700); sfx.tick();
+  /* into the return envelope */
+  ret.classList.add("here"); sfx.paper(); await wait(600);
+  sec.style.transition = "transform .5s cubic-bezier(.5,0,.3,1), opacity .2s .35s";
+  const a = sec.getBoundingClientRect(), b = ret.getBoundingClientRect();
+  sec.style.transform = `translate(${b.left + b.width / 2 - (a.left + a.width / 2)}px,${b.top + b.height / 2 - (a.top + a.height / 2)}px) rotate(-2deg) scale(.8)`; sec.style.opacity = "0";
+  await wait(600); ret.classList.add("marked"); await wait(200); sfx.thud();
+  await wait(500); pillar.classList.add("down"); sfx.clunk(); ret.tabIndex = 0; ret.focus({ preventScroll: true });
+  busy = false;
+}
+drag(gum, {
+  when: () => !busy && !sealed,
+  move: (dx) => { g = clamp(Math.abs(dx) / (gum.clientWidth * 0.8), 0, 1); gum.style.setProperty("--p", g); },
+  end: (dx, dy, e, moved) => { if (!moved || g > 0.6) seal(); else { g = 0; gum.style.setProperty("--p", 0); } },
+});
+gum.addEventListener("keydown", (e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); if (!busy) seal(); } });
+
+/* ── post it ── */
+let posted = false;
+async function postIt() {
+  if (posted) return; posted = true; busy = true;
+  const m = centre($("#mouth")), r = ret.getBoundingClientRect();
+  ret.classList.remove("held");
+  const dx = parseFloat(ret.style.getPropertyValue("--dx") || 0), dy = parseFloat(ret.style.getPropertyValue("--dy") || 0);
+  ret.style.setProperty("--dx", dx + m.x - (r.left + r.width / 2) + "px");
+  ret.style.setProperty("--dy", dy + m.y + 8 - r.top + "px");
+  ret.style.transition = "transform .4s cubic-bezier(.3,.7,.3,1)"; await wait(420);
+  const ch = $("#pchute"), w = ret.offsetWidth, h = ret.offsetHeight;
+  Object.assign(ch.style, { left: m.x - w / 2 - 20 + "px", width: w + 40 + "px", top: m.y + "px", height: h + 60 + "px" });
+  ret.style.cssText = `left:20px;top:8px;margin:0;transform:rotate(-2deg);transition:transform .6s cubic-bezier(.6,0,.9,.6)`; ch.append(ret); sfx.paper();
+  requestAnimationFrame(() => requestAnimationFrame(() => (ret.style.transform = `translateY(${-h - 40}px) rotate(0deg)`)));
+  await wait(620); sfx.clunk(); setTimeout(() => sfx.thud(), 140);
+  await wait(500); pillar.classList.remove("down");
+  const rec = $("#rec");
+  rec.innerHTML = `<div class="pmk">CLIFFSIDE<br>ACRES<br>15 XI 26</div><h3>Certificate of posting</h3><code>${code()}</code><p>Your ballot is in the post.<br>Keep this number to check it arrived.</p><p class="hand">Good. Now go outside. — G.C.</p>`;
+  await wait(300); rec.classList.add("show"); sfx.paper();
+}
+drag(ret, {
+  when: () => !busy && pillar.classList.contains("down") && !posted,
+  start: () => ret.classList.add("held"),
+  move: (dx, dy) => { ret.style.setProperty("--dx", dx + "px"); ret.style.setProperty("--dy", dy + "px"); },
+  end: (dx, dy, e, moved) => {
+    if (!moved || over(pillar, e.clientX, e.clientY, 30)) return postIt();
+    ret.classList.remove("held"); ret.style.setProperty("--dx", "0px"); ret.style.setProperty("--dy", "0px");
+  },
+});
+ret.addEventListener("keydown", (e) => { if ((e.key === " " || e.key === "Enter") && !busy && pillar.classList.contains("down")) { e.preventDefault(); postIt(); } });
+</script>
+</body>
+</html>

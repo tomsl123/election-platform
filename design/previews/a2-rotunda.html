@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>A2 · The Rotunda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+<style>
+/* A2 · THE ROTUNDA — bronze doors, marble, a glass urn under a navy niche.
+   Engraved cards, a fountain pen, an envelope closed with wax. One tap per act. */
+:root { --navy:#14213f; --gold:#c8a04a; --gold2:#f0d691; --cream:#f7f1df; --ink:#172a55; --cw:min(430px,90vw); }
+* { box-sizing:border-box; margin:0; }
+html, body { height:100%; overflow:hidden; background:#0b1226; color:#1c1a17; font-family:"Cormorant Garamond", Georgia, serif;
+  -webkit-user-select:none; user-select:none; -webkit-tap-highlight-color:transparent; }
+.caps { font-family:"Cinzel", "Times New Roman", serif; letter-spacing:.14em; text-transform:uppercase; }
+.stage { position:fixed; inset:0; display:grid; grid-template-columns:42% 58%; overflow:hidden; background:
+  linear-gradient(115deg, transparent 0 38%, rgba(110,120,145,.2) 38.3%, transparent 39.6%),
+  linear-gradient(98deg, transparent 0 61%, rgba(110,120,145,.15) 61.2%, transparent 62.8%),
+  linear-gradient(140deg, transparent 0 72%, rgba(150,135,110,.16) 72.2%, transparent 73.1%),
+  linear-gradient(72deg, transparent 0 18%, rgba(110,120,145,.12) 18.2%, transparent 19%),
+  radial-gradient(70% 55% at 30% 15%, #fff, transparent), #e7e3db; }
+
+/* ── the niche and the urn ── */
+.niche { position:relative; display:grid; place-items:end center; }
+.arch { position:absolute; left:50%; bottom:0; width:min(330px,86%); height:86%; transform:translateX(-50%); border-radius:999px 999px 0 0;
+  background:radial-gradient(90% 60% at 50% 30%, #25397086, transparent), linear-gradient(#1a2a52, #0e1830);
+  box-shadow:0 0 0 3px var(--gold), 0 0 0 12px #d9d4c9, 0 0 0 13px #b9b3a6, inset 0 30px 60px rgba(0,0,0,.5); }
+.col { position:relative; display:flex; flex-direction:column; align-items:center; }
+.urn { position:relative; width:204px; height:258px; }
+.glass { position:absolute; inset:24px 6px 12px; z-index:2; border-radius:8px 8px 18px 18px; border:2px solid rgba(255,255,255,.75);
+  background:linear-gradient(100deg, rgba(255,255,255,.34), rgba(255,255,255,.06) 28%, rgba(160,190,225,.16) 72%, rgba(255,255,255,.28));
+  box-shadow:inset 0 -18px 24px rgba(255,255,255,.14), 0 20px 30px rgba(0,0,0,.4); }
+.shine { position:absolute; inset:30px 12px 20px; z-index:6; pointer-events:none; border-radius:6px; background:linear-gradient(105deg, rgba(255,255,255,.5) 0 5%, transparent 5.5% 9%, rgba(255,255,255,.22) 9.5% 12%, transparent 12.5%); }
+.lid { position:absolute; left:-4px; right:-4px; top:0; height:28px; z-index:5; border-radius:8px 8px 3px 3px; background:linear-gradient(#f3dc98, #b98c36 55%, #8e6a22); box-shadow:0 3px 6px rgba(0,0,0,.4); }
+.lid::after { content:""; position:absolute; left:30%; right:30%; top:9px; height:7px; border-radius:4px; background:#2a1c05; box-shadow:0 1px 0 rgba(255,255,255,.4); }
+.foot { position:absolute; left:-8px; right:-8px; bottom:0; height:14px; z-index:5; border-radius:3px; background:linear-gradient(#e8cd84, #8e6a22); }
+.let { position:absolute; left:50%; width:78px; height:50px; margin-left:-39px; z-index:3; background:linear-gradient(#fbf6e8, #e9dfc4); box-shadow:0 1px 3px rgba(0,0,0,.35); }
+.let::after { content:""; position:absolute; left:50%; top:50%; width:12px; height:12px; margin:-6px; border-radius:50%; background:#9b1f18; }
+.let.new { z-index:4; }
+.urn.ring .lid { animation:lidglow 1.2s ease-out; }
+@keyframes lidglow { 30% { filter:brightness(1.5); } }
+.ped { width:150px; height:min(150px,18vh); margin-top:-2px; display:grid; place-items:center; color:var(--gold); background:linear-gradient(90deg, #cfc9bd, #f4f1ea 30%, #d8d2c5); border-top:8px solid #e9e5dc; box-shadow:0 0 0 1px #b9b3a6; }
+.ped .crest { width:46px; }
+
+/* ── the writing desk ── */
+.desk { position:relative; display:grid; place-items:center; background:linear-gradient(#1b2b53, #121d3b); box-shadow:inset 0 0 0 10px #0e1730, inset 0 0 0 11px var(--gold), inset 0 0 90px rgba(0,0,0,.5); }
+.card { position:absolute; width:var(--cw); background:var(--cream); padding:9px; box-shadow:0 2px 0 #d9cfae, 0 4px 0 #cdbf96, 0 26px 34px rgba(0,0,0,.5);
+  animation:rise .7s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes rise { from { transform:translateY(60px) scale(.96); opacity:0; } }
+.card.away { transition:transform .6s cubic-bezier(.6,0,.3,1), opacity .5s .1s; transform:translate(-70vw,-20px) rotate(-12deg); opacity:0; }
+.card.shake { animation:shake .3s; }
+@keyframes shake { 25% { transform:translateX(-7px); } 75% { transform:translateX(7px); } }
+.gilt { border:1.5px solid var(--gold); outline:1px solid var(--gold); outline-offset:-5px; padding:20px 20px 12px; }
+.card header { text-align:center; color:#2a2418; padding-bottom:12px; }
+.card header .crest { width:34px; color:var(--gold); }
+.card header small { display:block; font:500 9.5px "Cinzel", serif; letter-spacing:.3em; text-transform:uppercase; opacity:.7; margin-top:4px; }
+.card h2 { font:700 23px "Cinzel", serif; letter-spacing:.12em; text-transform:uppercase; margin:4px 0 2px; }
+.card em { font-size:17px; opacity:.8; }
+.card ul { list-style:none; padding:0; }
+.card li { display:grid; grid-template-columns:40px 1fr 44px; gap:14px; align-items:center; height:60px; border-top:1px solid rgba(200,160,74,.55); cursor:pointer; outline-offset:2px; }
+.card li:focus-visible { outline:2px solid var(--ink); }
+.med { width:38px; height:38px; border-radius:50%; display:grid; place-items:center; box-shadow:0 0 0 1.5px var(--gold), inset 0 1px 3px rgba(0,0,0,.25); background:#fffaf0; }
+.med svg { width:22px; height:22px; }
+.nm { font-size:22px; font-weight:600; line-height:1; }
+.nm small { display:block; font:500 9.5px "Cinzel", serif; letter-spacing:.24em; opacity:.6; margin-top:5px; }
+.well { position:relative; width:40px; height:40px; border-radius:50%; background:#fffdf6; box-shadow:0 0 0 2px var(--gold), 0 0 0 3.5px #8e6a22, inset 0 2px 5px rgba(0,0,0,.3); }
+.well i { position:absolute; inset:3px; border-radius:47% 53% 55% 45% / 52% 46% 54% 48%; background:radial-gradient(circle at 40% 35%, #2c4a94, var(--ink) 65%);
+  transform:scale(0); filter:blur(3px); transition:transform .5s cubic-bezier(.2,.9,.3,1.2), filter .5s, opacity .3s; }
+li.on .well i { transform:scale(1); filter:blur(.3px); }
+.card footer { display:flex; justify-content:center; gap:16px; padding-top:12px; border-top:1px solid rgba(200,160,74,.55); font:500 12px "Cinzel", serif; color:#b9a57a; }
+.card footer b { color:#2a2418; font-weight:700; }
+.next { position:absolute; left:50%; bottom:-27px; width:54px; height:54px; margin-left:-27px; border:0; border-radius:50%; cursor:pointer; color:#3b2a07;
+  background:radial-gradient(circle at 35% 30%, var(--gold2), var(--gold) 60%, #8e6a22); box-shadow:0 0 0 3px var(--cream), 0 6px 12px rgba(0,0,0,.45);
+  transform:scale(0); transition:transform .35s cubic-bezier(.3,1.5,.5,1); display:grid; place-items:center; }
+.card.ready .next { transform:scale(1); animation:beat 1.6s ease-in-out infinite .4s; }
+@keyframes beat { 50% { box-shadow:0 0 0 3px var(--cream), 0 0 0 11px rgba(240,214,145,.35), 0 6px 12px rgba(0,0,0,.45); } }
+.next svg { width:22px; fill:none; stroke:currentColor; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+.next:focus-visible, .seal:focus-visible, .knock:focus-visible { outline:3px solid #fff; outline-offset:5px; }
+
+.pen { position:fixed; left:0; top:0; width:170px; height:170px; margin-top:-170px; pointer-events:none; z-index:15; opacity:0; filter:drop-shadow(6px 10px 5px rgba(0,0,0,.4)); }
+
+/* ── envelope and wax ── */
+.env { position:absolute; inset:0; margin:auto; width:min(380px,84vw); aspect-ratio:1.62; visibility:hidden; z-index:8; }
+.env.show { visibility:visible; animation:rise .6s both; }
+.eback, .efront { position:absolute; inset:0; background:linear-gradient(#fbf6e8, #ece2c8); }
+.eback { box-shadow:0 24px 34px rgba(0,0,0,.5); background:#e2d7b8; }
+.efront { z-index:3; clip-path:polygon(0 0,50% 46%,100% 0,100% 100%,0 100%); background:
+  linear-gradient(33deg, transparent 49.7%, rgba(120,95,40,.3) 50%, transparent 50.6%), linear-gradient(-33deg, transparent 49.7%, rgba(120,95,40,.3) 50%, transparent 50.6%), linear-gradient(#fbf6e8, #ece2c8); }
+.eflap { position:absolute; left:0; right:0; bottom:100%; height:56%; z-index:1; background:linear-gradient(#efe6cd, #e2d7b8); clip-path:polygon(0 100%,50% 0,100% 100%);
+  transform-origin:50% 100%; transition:transform .7s cubic-bezier(.5,0,.3,1); }
+.env.shut .eflap { transform:rotateX(180deg); z-index:4; background:linear-gradient(#fbf6e8, #f1e8d0); filter:drop-shadow(0 3px 2px rgba(0,0,0,.25)); }
+.mini { position:absolute; left:14%; right:14%; top:8%; height:84%; z-index:2; background:var(--cream); box-shadow:inset 0 0 0 4px var(--cream), inset 0 0 0 5px var(--gold), 0 2px 5px rgba(0,0,0,.3);
+  transform:translateY(-170%) rotate(var(--r)); opacity:0; transition:transform .6s cubic-bezier(.5,0,.3,1), opacity .2s; }
+.mini.in { transform:translateY(0) rotate(0); opacity:1; }
+.seal { position:absolute; left:50%; top:55%; width:74px; height:74px; margin:-37px; z-index:6; border:2px dashed var(--gold); border-radius:50%; background:none; cursor:pointer; display:none; animation:spin 9s linear infinite; }
+.env.shut .seal { display:block; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.wax { position:absolute; left:50%; top:55%; width:70px; height:70px; margin:-35px; z-index:5; border-radius:48% 52% 55% 45% / 52% 47% 53% 48%; color:#6d120d; display:grid; place-items:center;
+  background:radial-gradient(circle at 36% 30%, #d84a3f, #9b1f18 68%); box-shadow:0 3px 5px rgba(0,0,0,.45), inset 0 0 0 5px rgba(0,0,0,.08); transform:scale(0); transition:transform .5s cubic-bezier(.3,1.4,.5,1); }
+.wax.on { transform:scale(1); }
+.wax .crest { width:30px; opacity:0; transition:opacity .2s; }
+.wax.pressed .crest { opacity:1; }
+.die { position:absolute; left:50%; top:55%; width:84px; height:84px; margin:-42px; z-index:7; border-radius:50%; pointer-events:none; opacity:0;
+  background:radial-gradient(circle at 35% 30%, var(--gold2), var(--gold) 55%, #7c5a17); box-shadow:0 20px 24px rgba(0,0,0,.5); transform:scale(2.4) translateY(-60px); }
+.die.down { opacity:1; transform:scale(1); transition:transform .25s cubic-bezier(.7,0,1,.5), opacity .1s; }
+.die.up { opacity:0; transform:scale(2) translateY(-50px); transition:transform .5s, opacity .4s .1s; }
+
+/* ── certificate ── */
+.cert { position:absolute; left:71%; top:50%; width:min(340px,86vw); z-index:20; padding:9px; background:var(--cream); text-align:center; box-shadow:0 30px 50px rgba(0,0,0,.6);
+  transform:translate(-50%,120vh); transition:transform .9s cubic-bezier(.2,.8,.2,1); }
+.cert.show { transform:translate(-50%,-50%); }
+.cert .gilt { padding:26px 18px 22px; }
+.cert .crest { width:52px; color:var(--gold); }
+.cert h3 { font:700 17px "Cinzel", serif; letter-spacing:.2em; text-transform:uppercase; margin:10px 0 2px; }
+.cert p { font-size:17px; font-style:italic; opacity:.8; }
+.cert code { display:block; margin:14px auto 10px; padding:10px 0; font:700 19px "Cinzel", serif; letter-spacing:.14em; border-block:1px solid var(--gold); }
+.cert small { font:500 9.5px "Cinzel", serif; letter-spacing:.26em; text-transform:uppercase; opacity:.65; }
+.rib { position:absolute; left:50%; bottom:-30px; width:40px; height:54px; margin-left:-20px; background:linear-gradient(90deg, #8e1a14, #c8362c 50%, #8e1a14); clip-path:polygon(0 0,100% 0,100% 100%,50% 76%,0 100%); z-index:-1; }
+
+/* ── bronze doors ── */
+.doors { position:absolute; inset:0; z-index:30; display:flex; perspective:1700px; }
+.door { flex:1; transition:transform 1.5s cubic-bezier(.6,0,.2,1); background:
+  linear-gradient(90deg, rgba(0,0,0,.4), transparent 10%, transparent 90%, rgba(0,0,0,.4)),
+  repeating-linear-gradient(0deg, transparent 0 168px, rgba(0,0,0,.4) 168px 172px, rgba(255,230,170,.18) 172px 174px),
+  repeating-linear-gradient(90deg, transparent 0 168px, rgba(0,0,0,.3) 168px 172px, rgba(255,230,170,.14) 172px 174px),
+  linear-gradient(#80602f, #4a3416); box-shadow:inset 0 0 0 14px #5c4420, inset 0 0 0 16px #a9843f; }
+.door.l { transform-origin:0 50%; } .door.r { transform-origin:100% 50%; }
+.open .door.l { transform:rotateY(-104deg); } .open .door.r { transform:rotateY(104deg); }
+.knock { position:absolute; left:50%; top:50%; z-index:31; width:min(190px,48vw); aspect-ratio:1; transform:translate(-50%,-50%); border:0; border-radius:50%; cursor:pointer; color:#3b2a07;
+  background:radial-gradient(circle at 35% 28%, var(--gold2), var(--gold) 58%, #7c5a17); box-shadow:0 0 0 5px #5c4420, 0 0 0 7px #d9b96a, 0 16px 30px rgba(0,0,0,.6); display:grid; place-items:center; transition:opacity .4s, transform .6s;
+  animation:halo 2s ease-in-out infinite; }
+@keyframes halo { 50% { box-shadow:0 0 0 5px #5c4420, 0 0 0 7px #d9b96a, 0 0 0 22px rgba(240,214,145,.18), 0 16px 30px rgba(0,0,0,.6); } }
+.knock .crest { width:50%; }
+.open .knock { opacity:0; transform:translate(-50%,-50%) scale(.7); pointer-events:none; }
+
+@media (orientation:portrait) {
+  .stage { grid-template-columns:1fr; grid-template-rows:37% 63%; }
+  .arch { height:94%; width:min(280px,70%); }
+  .urn { transform:scale(.72); transform-origin:50% 100%; } .ped { height:44px; width:120px; } .ped .crest { display:none; }
+  .card li { height:54px; } .gilt { padding:14px 16px 10px; } .card h2 { font-size:20px; } .cert { left:50%; top:66%; }
+}
+@media (max-height:640px) and (orientation:landscape) { .card li { height:50px; } .gilt { padding:12px 18px 8px; } .urn { transform:scale(.8); transform-origin:50% 100%; } }
+@media (prefers-reduced-motion:reduce) { * { animation-duration:.01s !important; transition-duration:.01s !important; } }
+</style>
+</head>
+<body>
+<main class="stage" id="stage">
+  <section class="niche">
+    <div class="arch"></div>
+    <div class="col">
+      <div class="urn" id="urn"><div class="glass"></div><div class="lid" id="lid"></div><div class="shine"></div><div class="foot"></div></div>
+      <div class="ped" id="ped"></div>
+    </div>
+  </section>
+  <section class="desk" id="desk">
+    <div class="env" id="env">
+      <div class="eback"></div><div class="eflap"></div><div class="efront"></div>
+      <div class="wax" id="wax"></div><div class="die" id="die"></div>
+      <button class="seal" id="seal" aria-label="Seal the envelope with wax"></button>
+    </div>
+  </section>
+  <svg class="pen" id="pen" viewBox="0 0 170 170"><path d="M0 170l9-30 21 21z" fill="#d9c27a"/><path d="M0 170l13-13" stroke="#3a2c08" stroke-width="1.5"/>
+    <path d="M17 132l21 21 112-112-21-21z" fill="#14213f"/><path d="M27 122l21 21 8-8-21-21z" fill="#c8a04a"/><path d="M129 20l21 21 12-12a10 10 0 000-14l-7-7a10 10 0 00-14 0z" fill="#0c1529"/><path d="M40 127l100-100" stroke="rgba(255,255,255,.25)" stroke-width="3"/></svg>
+  <div class="cert" id="cert" role="status"></div>
+  <div class="doors"><div class="door l"></div><div class="door r"></div></div>
+  <button class="knock" id="knock" aria-label="Open the doors"></button>
+</main>
+
+<script src="shared.js"></script>
+<script>
+const { $, $$, wait, election: E, sym, crest, sfx, centre, choose, code, chrome, rnd } = EP;
+chrome({ code: "A2", name: "The Rotunda" });
+
+const stage = $("#stage"), desk = $("#desk"), urn = $("#urn"), pen = $("#pen"), env = $("#env");
+const sel = {}; let idx = 0, busy = true;
+const ROMAN = ["I", "II", "III"];
+
+$("#knock").innerHTML = crest(); $("#ped").innerHTML = crest(); $("#wax").innerHTML = crest();
+for (let i = 0; i < 9; i++) { const l = document.createElement("i"); l.className = "let"; l.style.cssText = `bottom:${14 + (i % 4) * 9 + rnd(0, 6)}px;transform:translateX(${rnd(-44, 44)}px) rotate(${rnd(-30, 30)}deg)`; urn.append(l); }
+
+$("#knock").onclick = async () => {
+  sfx.clunk(); stage.classList.add("open"); setTimeout(() => sfx.thud(), 1300);
+  await wait(1100); deal(); await wait(600); $(".doors").style.display = "none";
+};
+
+function penTo(x, y) {
+  pen.animate([
+    { transform: `translate(${x + 180}px,${y - 220}px) rotate(18deg)`, opacity: 0 },
+    { transform: `translate(${x}px,${y}px) rotate(0deg)`, opacity: 1, offset: 0.42 },
+    { transform: `translate(${x + 3}px,${y - 2}px) rotate(-3deg)`, opacity: 1, offset: 0.7 },
+    { transform: `translate(${x + 200}px,${y - 180}px) rotate(14deg)`, opacity: 0 },
+  ], { duration: 950, easing: "ease-in-out" });
+}
+
+function deal() {
+  const p = E.points[idx];
+  const card = document.createElement("article"); card.className = "card"; card.setAttribute("aria-label", p.title);
+  card.innerHTML = `<div class="gilt">
+    <header>${crest()}<small>${E.org}</small><h2>${p.title}</h2><em>${p.ask}</em></header>
+    <ul>${p.options.map((o) => `<li data-id="${o.id}" role="checkbox" aria-checked="false" tabindex="0"><span class="med" style="color:${o.color}">${sym(o.sym)}</span>
+      <span class="nm">${o.full}${o.party ? `<small>${o.party}</small>` : ""}</span><span class="well"><i></i></span></li>`).join("")}</ul>
+    <footer>${ROMAN.map((r, i) => (i === idx ? `<b>${r}</b>` : `<span>${r}</span>`)).join("")}</footer></div>
+    <button class="next" aria-label="${idx < 2 ? "Next card" : "Place the cards in the envelope"}" tabindex="-1"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>`;
+  desk.append(card); sfx.paper();
+  const ready = () => { const on = (sel[p.id] || []).length > 0; card.classList.toggle("ready", on); $(".next", card).tabIndex = on ? 0 : -1; };
+  const paint = (id, on) => { const li = $(`li[data-id="${id}"]`, card); li.classList.toggle("on", on); li.setAttribute("aria-checked", on); };
+  async function mark(li) {
+    if (busy) return;
+    const id = li.dataset.id, r = choose(sel, p, id);
+    if (r.full) { card.classList.remove("shake"); void card.offsetWidth; card.classList.add("shake"); sfx.buzz(); return; }
+    r.off.forEach((o) => paint(o, false));
+    if (r.on) {
+      busy = true; const c = centre($(".well", li)); penTo(c.x, c.y);
+      await wait(400); sfx.scratch(); setTimeout(() => sfx.scratch(), 90); paint(id, true);
+      await wait(380); busy = false;
+    } else sfx.paper();
+    ready();
+  }
+  $$("li", card).forEach((li) => {
+    li.onclick = () => mark(li);
+    li.onkeydown = (e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); mark(li); } };
+  });
+  $(".next", card).onclick = async () => {
+    if (busy || !card.classList.contains("ready")) return;
+    busy = true; card.classList.remove("ready"); card.classList.add("away"); sfx.paper();
+    await wait(520); card.remove(); idx++;
+    if (idx < E.points.length) deal(); else envelope();
+  };
+  setTimeout(() => (busy = false), 600);
+}
+
+/* ── three cards into one envelope, closed with wax ── */
+async function envelope() {
+  env.classList.add("show"); sfx.paper(); await wait(650);
+  for (let i = 0; i < 3; i++) {
+    const m = document.createElement("i"); m.className = "mini"; m.style.setProperty("--r", (i - 1) * 9 + "deg"); env.insertBefore(m, $(".efront", env));
+    await wait(40); m.classList.add("in"); sfx.paper(); await wait(430);
+  }
+  await wait(200); env.classList.add("shut"); sfx.paper(); await wait(750);
+  busy = false; $("#seal").focus({ preventScroll: true });
+}
+$("#seal").onclick = async () => {
+  if (busy) return; busy = true;
+  const wax = $("#wax"), die = $("#die");
+  $("#seal").style.display = "none";
+  wax.classList.add("on"); sfx.hiss(); await wait(650);
+  die.classList.add("down"); await wait(250); sfx.thud(); wax.classList.add("pressed"); await wait(420);
+  die.classList.replace("down", "up"); await wait(600);
+  fly();
+};
+
+async function fly() {
+  const a = env.getBoundingClientRect(), l = $("#lid").getBoundingClientRect(), u = urn.getBoundingClientRect();
+  const k = u.width / urn.offsetWidth; /* the urn is scaled down on phones */
+  const dx = l.left + l.width / 2 - (a.left + a.width / 2), dy = l.top - 70 * k - (a.top + a.height / 2);
+  sfx.paper();
+  await env.animate([{ transform: "none" }, { transform: `translate(${dx * 0.5}px,${dy - 60}px) rotate(40deg) scale(.6)`, offset: 0.6 }, { transform: `translate(${dx}px,${dy}px) rotate(90deg) scale(${(78 * k) / a.width})` }],
+    { duration: 1100, easing: "cubic-bezier(.5,0,.3,1)", fill: "forwards" }).finished;
+  env.style.visibility = "hidden";
+  const m = document.createElement("i"); m.className = "let new"; m.style.top = "0"; urn.append(m);
+  const floor = urn.offsetHeight - 50 - 14 - 44;
+  sfx.paper();
+  await m.animate([{ transform: "translateY(-96px) rotate(90deg)" }, { transform: `translateY(${floor * 0.55}px) rotate(84deg)`, offset: 0.55 }, { transform: `translateY(${floor}px) rotate(18deg)`, offset: 0.86 }, { transform: `translateY(${floor - 5}px) rotate(12deg)`, offset: 0.93 }, { transform: `translateY(${floor}px) rotate(14deg)` }],
+    { duration: 1000, easing: "cubic-bezier(.5,0,.8,.6)", fill: "forwards" }).finished;
+  sfx.tick(); urn.classList.add("ring"); sfx.bell();
+  await wait(900);
+  const c = $("#cert");
+  c.innerHTML = `<div class="gilt">${crest()}<h3>Ballot received</h3><p>${E.name}, ${E.date}</p><code>${code()}</code><small>Keep this number · it proves your vote is in the urn</small></div><i class="rib"></i>`;
+  c.classList.add("show"); sfx.paper();
+}
+</script>
+</body>
+</html>

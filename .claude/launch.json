@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "design-studies",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["design/serve.mjs"],
+      "port": 4310
+    }
+  ]
+}

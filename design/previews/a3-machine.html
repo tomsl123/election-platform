@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>A3 · The Lever Machine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+/* A3 · THE LEVER MACHINE — a mechanical voting machine in hammertone enamel.
+   Nothing is tapped: small levers are slid, the red master lever is thrown. */
+:root { --enamel:#7f9383; --dark:#1b211d; --chrome:#d7dcd9; --red:#b3241c; --lab:#efe6cd; --rh:clamp(36px,6.6vh,56px); }
+* { box-sizing:border-box; margin:0; }
+html, body { height:100%; overflow:hidden; background:#0e1210; color:#111; font-family:"Barlow Condensed", "Arial Narrow", sans-serif;
+  -webkit-user-select:none; user-select:none; -webkit-tap-highlight-color:transparent; }
+.mach { position:fixed; inset:0; display:grid; grid-template:"head head" auto "bank pull" 1fr "base base" auto / 1fr clamp(96px,13vw,150px); gap:0;
+  background:linear-gradient(160deg, #94a897, #6f8474 55%, #5c7061); box-shadow:inset 0 0 0 6px #4c5d50, inset 0 0 0 8px #a8b8aa, inset 0 0 120px rgba(0,0,0,.35); }
+.mach::before { content:""; position:absolute; inset:0; pointer-events:none; opacity:.55; mix-blend-mode:overlay;
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 1.4 -.3'/></filter><rect width='180' height='180' filter='url(%23n)'/></svg>"); }
+
+/* ── header ── */
+.head { grid-area:head; display:flex; align-items:center; gap:14px; padding:18px 22px 10px 22px; position:relative; }
+.badge { width:46px; height:46px; margin-left:214px; border-radius:50%; display:grid; place-items:center; color:#2a2a25; background:radial-gradient(circle at 35% 30%, #fff, var(--chrome) 55%, #8d9490); box-shadow:0 2px 4px rgba(0,0,0,.45); }
+.badge .crest { width:24px; }
+.plate { padding:6px 14px; background:#16191a; color:#e9e4d3; border-radius:3px; box-shadow:0 0 0 2px var(--chrome), 0 3px 5px rgba(0,0,0,.4); line-height:1.05; }
+.plate b { display:block; font-size:19px; letter-spacing:.22em; }
+.plate small { font-size:10.5px; letter-spacing:.24em; opacity:.7; }
+.ctr { margin-left:auto; text-align:center; }
+.ctr small { display:block; font-size:10px; font-weight:600; letter-spacing:.24em; color:#1f2a22; margin-bottom:3px; }
+.odo { display:flex; gap:2px; padding:4px; background:#0d0f0e; border-radius:4px; box-shadow:0 0 0 2px var(--chrome), inset 0 2px 5px #000; }
+.odo .w { width:19px; height:27px; overflow:hidden; border-radius:2px; background:linear-gradient(#bdb7a4, #f5f0e0 45%, #f5f0e0 55%, #aaa491); font:600 20px/27px "IBM Plex Mono", monospace; text-align:center; color:#15130f; }
+.odo .w:last-child { background:linear-gradient(#a83a32, #e4574c 45%, #e4574c 55%, #932c25); color:#fff; }
+.odo .w i { display:block; font-style:normal; transition:transform .7s cubic-bezier(.5,0,.3,1); }
+
+/* ── lever bank ── */
+.bank { grid-area:bank; display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; padding:6px 8px 12px 22px; align-content:center; transition:filter .6s; filter:brightness(.5) saturate(.6); }
+.live .bank { filter:none; }
+.panel { position:relative; padding:8px; background:linear-gradient(#2a322c, #1c221e); border-radius:6px; box-shadow:0 0 0 2px #aab8ab, 0 0 0 4px #4c5d50, inset 0 3px 8px rgba(0,0,0,.6); align-self:start; }
+.panel h3 { display:flex; align-items:center; gap:8px; height:30px; padding:0 4px 6px; color:#e9e4d3; font-size:15px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; white-space:nowrap; }
+.panel h3 em { margin-left:auto; font-style:normal; font-size:11px; letter-spacing:.2em; opacity:.6; }
+.lamp { width:11px; height:11px; border-radius:50%; background:#3a2f10; box-shadow:inset 0 1px 2px #000, 0 0 0 1.5px #0b0d0c; flex:none; transition:background .3s, box-shadow .3s; }
+.live .lamp { background:#f2a81d; box-shadow:0 0 9px #f2a81d, 0 0 0 1.5px #0b0d0c; }
+.live .panel.ok .lamp { background:#55e07a; box-shadow:0 0 9px #55e07a, 0 0 0 1.5px #0b0d0c; }
+.panel.warn .lamp { animation:blink .18s 6 alternate; }
+@keyframes blink { to { background:#ff4a3a; box-shadow:0 0 12px #ff4a3a; } }
+.row { display:grid; grid-template-columns:1fr 64px 30px; gap:7px; align-items:center; height:var(--rh); }
+.row.rattle { animation:rattle .25s; }
+@keyframes rattle { 20% { transform:translateX(-3px); } 60% { transform:translateX(3px); } }
+.lab { height:calc(var(--rh) - 8px); display:flex; align-items:center; gap:8px; padding:0 9px; min-width:0; background:var(--lab); border-radius:2px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.25), inset 0 6px 8px -6px rgba(0,0,0,.4); transition:background .4s; }
+.live .lab { background:#fff8e2; box-shadow:inset 0 0 0 1px rgba(0,0,0,.25), 0 0 14px rgba(255,236,170,.25); }
+.lab .sym { width:20px; height:20px; flex:none; }
+.lab b { font-size:17px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.lab small { margin-left:auto; font-size:11px; font-weight:600; letter-spacing:.14em; opacity:.55; }
+.lv { position:relative; height:26px; border-radius:13px; background:#0a0c0b; box-shadow:inset 0 2px 4px #000, 0 0 0 1.5px #8d9a8f; cursor:grab; outline-offset:3px; }
+.lv:focus-visible, .handle:focus-visible { outline:3px solid #ffe27a; }
+.knob { position:absolute; left:2px; top:2px; width:22px; height:22px; border-radius:50%; background:radial-gradient(circle at 35% 30%, #6d6d6d, #1b1b1b 60%, #000); box-shadow:0 2px 3px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.3); transition:transform .16s cubic-bezier(.3,1.6,.5,1); }
+.lv.wig .knob { animation:wig .35s; }
+@keyframes wig { 30% { translate:9px 0; } 60% { translate:0 0; } 80% { translate:4px 0; } }
+.flag { position:relative; height:26px; overflow:hidden; border-radius:3px; background:#050605; box-shadow:inset 0 2px 4px #000, 0 0 0 1.5px #8d9a8f; }
+.flag i { position:absolute; inset:2px; display:grid; place-items:center; background:var(--red); color:#fff; border-radius:2px; transform:translateY(-120%); transition:transform .18s cubic-bezier(.3,1.5,.5,1); }
+.flag svg { width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:4; stroke-linecap:round; }
+.row.on .flag i { transform:none; }
+.screw { position:absolute; width:9px; height:9px; border-radius:50%; background:radial-gradient(circle at 35% 30%, #fff, #9aa29c 60%, #5d655f); box-shadow:0 1px 1px rgba(0,0,0,.5); }
+
+/* ── master lever ── */
+.pull { grid-area:pull; position:relative; padding:6px 22px 12px 6px; display:flex; flex-direction:column; align-items:center; gap:8px; }
+.track { position:relative; flex:1; width:54px; border-radius:27px; background:#090b0a; box-shadow:inset 0 3px 8px #000, 0 0 0 3px var(--chrome), 0 0 0 5px #4c5d50; }
+.handle { position:absolute; left:50%; top:0; width:84px; height:62px; margin-left:-42px; border:0; border-radius:14px; cursor:grab; color:#fff; touch-action:none;
+  background:linear-gradient(#e0483d, var(--red) 55%, #7c1610); box-shadow:0 0 0 3px #1a1a1a, 0 10px 14px rgba(0,0,0,.55), inset 0 2px 0 rgba(255,255,255,.35);
+  transform:translateY(calc(var(--t,0) * var(--span,0px))); display:grid; place-items:center; }
+.handle.snap { transition:transform .22s cubic-bezier(.3,1.4,.5,1); }
+.handle svg { width:30px; height:30px; fill:none; stroke:currentColor; stroke-width:3.4; stroke-linecap:round; stroke-linejoin:round; animation:hintd 1.2s ease-in-out infinite; }
+.live .handle svg { transform:rotate(180deg); animation-name:hintu; }
+.done .handle svg { animation:none; opacity:.4; }
+@keyframes hintd { 50% { translate:0 6px; } } @keyframes hintu { 50% { translate:0 -6px; } }
+.handle.nudge { animation:nudge .5s 2; }
+@keyframes nudge { 50% { box-shadow:0 0 0 3px #1a1a1a, 0 0 0 12px rgba(255,226,122,.5), 0 10px 14px rgba(0,0,0,.55); } }
+.pull small { font-size:10px; font-weight:600; letter-spacing:.24em; color:#1f2a22; }
+
+/* ── base and paper tape ── */
+.base { grid-area:base; position:relative; height:34px; margin:0 8px 8px; border-radius:0 0 4px 4px; background:linear-gradient(#2a322c, #151a17); box-shadow:0 0 0 2px #8d9a8f; }
+.slotp { position:absolute; left:50%; top:9px; width:250px; height:9px; margin-left:-125px; border-radius:5px; background:#000; box-shadow:0 1px 0 rgba(255,255,255,.25); }
+.clip { position:absolute; left:50%; bottom:24px; width:232px; height:208px; margin-left:-116px; overflow:hidden; pointer-events:none; z-index:6; }
+.tape { position:absolute; left:0; right:0; bottom:0; padding:18px 14px 16px; background:#fbf8ee; color:#1c1c1c; text-align:center; font:500 12px/1.5 "IBM Plex Mono", monospace; letter-spacing:.06em;
+  transform:translateY(102%); transition:transform 1.9s steps(14); box-shadow:0 0 14px rgba(0,0,0,.4);
+  clip-path:polygon(0 7px,4% 0,8% 7px,12% 0,16% 7px,20% 0,24% 7px,28% 0,32% 7px,36% 0,40% 7px,44% 0,48% 7px,52% 0,56% 7px,60% 0,64% 7px,68% 0,72% 7px,76% 0,80% 7px,84% 0,88% 7px,92% 0,96% 7px,100% 0,100% 100%,0 100%); }
+.tape.out { transform:none; }
+.tape .crest { width:26px; } .tape b { display:block; font-size:13px; letter-spacing:.2em; }
+.tape code { display:block; font:600 17px "IBM Plex Mono", monospace; margin:8px 0; padding:7px 0; border-block:1px dashed #555; }
+
+@media (orientation:portrait) {
+  .mach { grid-template:"head" auto "bank" 1fr "pull" auto "base" auto / 1fr; --rh:clamp(32px,5.1vh,48px); }
+  .head { padding:52px 16px 6px; gap:10px; } .badge { margin-left:0; width:38px; height:38px; } .plate b { font-size:15px; } .plate small { display:none; }
+  .bank { grid-template-columns:1fr; gap:9px; padding:6px 16px; }
+  .panel { padding:6px 8px; } .panel h3 { height:24px; font-size:13px; padding-bottom:4px; }
+  .pull { flex-direction:row; padding:6px 16px 10px; height:84px; }
+  .track { height:50px; width:auto; align-self:center; }
+  .handle { left:0; top:50%; margin:-34px 0 0 0; width:72px; height:68px; transform:translateX(calc(var(--t,0) * var(--span,0px))); }
+  .handle svg { rotate:-90deg; } .pull small { display:none; }
+}
+@media (prefers-reduced-motion:reduce) { * { animation-duration:.01s !important; transition-duration:.01s !important; } }
+</style>
+</head>
+<body>
+<main class="mach" id="mach">
+  <header class="head">
+    <div class="badge" id="badge"></div>
+    <div class="plate"><b>VOTING MACHINE</b><small>USFC · MODEL 26 · CLIFFSIDE ACRES</small></div>
+    <div class="ctr"><small>PUBLIC COUNTER</small><div class="odo" id="odo"></div></div>
+  </header>
+  <section class="bank" id="bank"></section>
+  <aside class="pull">
+    <div class="track" id="track"><button class="handle" id="handle" aria-label="Master lever: throw to begin, throw back to register your vote"><svg viewBox="0 0 24 24"><path d="M5 6l7 6 7-6M5 13l7 6 7-6"/></svg></button></div>
+    <small>REGISTER</small>
+  </aside>
+  <footer class="base"><div class="slotp"></div><div class="clip"><div class="tape" id="tape" role="status"></div></div></footer>
+</main>
+
+<script src="shared.js"></script>
+<script>
+const { $, $$, wait, election: E, sym, crest, sfx, drag, choose, code, chrome } = EP;
+chrome({ code: "A3", name: "The Lever Machine" });
+
+const mach = $("#mach"), bank = $("#bank"), track = $("#track"), handle = $("#handle");
+const sel = {}, levers = {};
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+let phase = "idle", busy = false, count = 4129;
+
+$("#badge").innerHTML = crest();
+$("#odo").innerHTML = Array.from({ length: 6 }, () => `<span class="w"><i>${"0123456789".split("").join("<br>")}</i></span>`).join("");
+const odo = (n) => { const s = String(n).padStart(6, "0"); $$("#odo .w i").forEach((w, i) => (w.style.transform = `translateY(${-s[i] * 10}%)`)); };
+odo(count);
+
+/* ── the lever bank ── */
+E.points.forEach((p) => {
+  const el = document.createElement("section"); el.className = "panel"; el.dataset.p = p.id;
+  el.innerHTML = `<i class="screw" style="left:-1px;top:-1px"></i><i class="screw" style="right:-1px;top:-1px"></i>
+    <h3><i class="lamp"></i><span>${p.no} · ${p.title}</span><em>${p.max > 1 ? "ANY " + p.max : "ONE"}</em></h3>
+    ${p.options.map((o) => `<div class="row" data-id="${o.id}"><span class="lab"><span style="color:${o.color};display:grid">${sym(o.sym)}</span><b>${o.name}</b>${o.party ? `<small>${o.party}</small>` : ""}</span>
+      <span class="lv" role="switch" aria-checked="false" aria-label="${o.full}" tabindex="0"><i class="knob"></i></span>
+      <span class="flag"><i><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg></i></span></div>`).join("")}`;
+  bank.append(el);
+  levers[p.id] = {};
+  $$(".row", el).forEach((row) => {
+    const lv = $(".lv", row), knob = $(".knob", lv), id = row.dataset.id;
+    const T = () => lv.clientWidth - knob.offsetWidth - 4;
+    const isOn = () => (sel[p.id] || []).includes(id);
+    const full = () => p.max > 1 && (sel[p.id] || []).length >= p.max;
+    const show = (on) => { knob.style.transition = ""; knob.style.transform = `translateX(${on ? T() : 0}px)`; lv.classList.toggle("on", on); lv.setAttribute("aria-checked", on); row.classList.toggle("on", on); };
+    const want = (on) => {
+      if (on === isOn()) return show(on);
+      const r = choose(sel, p, id);
+      if (r.full) { show(false); sfx.buzz(); row.classList.remove("rattle"); void row.offsetWidth; row.classList.add("rattle"); return; }
+      r.off.filter((o) => o !== id).forEach((o) => { levers[p.id][o].show(false); sfx.tick(); });
+      show(r.on); sfx.clunk();
+      el.classList.toggle("ok", (sel[p.id] || []).length > 0);
+    };
+    const locked = () => { lv.classList.remove("wig"); void lv.offsetWidth; lv.classList.add("wig"); sfx.tick(); if (phase === "idle") { handle.classList.remove("nudge"); void handle.offsetWidth; handle.classList.add("nudge"); } };
+    let x0 = 0, x = 0;
+    drag(lv, {
+      start: () => { x0 = x = isOn() ? T() : 0; knob.style.transition = "none"; },
+      move: (dx) => {
+        if (phase !== "live" || busy) return;
+        x = clamp(x0 + dx, 0, T());
+        if (!isOn() && full()) x = Math.min(x, T() * 0.3);
+        knob.style.transform = `translateX(${x}px)`;
+      },
+      end: (dx, dy, e, moved) => {
+        if (phase !== "live" || busy) return locked();
+        if (!moved) { show(isOn()); return locked(); }
+        if (!isOn() && full()) { want(true); return; }
+        want(x > T() / 2);
+      },
+    });
+    lv.addEventListener("keydown", (e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); phase === "live" && !busy ? want(!isOn()) : locked(); } });
+    levers[p.id][id] = { show };
+  });
+});
+
+/* ── the master lever: throw it to begin, throw it back to register ── */
+const horiz = () => matchMedia("(orientation:portrait)").matches;
+const span = () => (horiz() ? track.clientWidth - handle.offsetWidth : track.clientHeight - handle.offsetHeight);
+const fit = () => track.style.setProperty("--span", span() + "px");
+fit(); addEventListener("resize", fit);
+let t = 0, t0 = 0, notch = 0;
+const setT = (v, snap) => { t = v; handle.classList.toggle("snap", !!snap); handle.style.setProperty("--t", v); };
+const settle = () => {
+  if (phase === "idle") return t > 0.75 ? engage() : setT(0, true);
+  if (phase === "live") return t < 0.25 ? tryRegister() : setT(1, true);
+};
+drag(handle, {
+  when: () => phase !== "done" && !busy,
+  start: () => { t0 = t; handle.classList.remove("snap"); fit(); },
+  move: (dx, dy) => { setT(clamp(t0 + (horiz() ? dx : dy) / span(), 0, 1)); const n = Math.round(t * 8); if (n !== notch) { notch = n; sfx.tick(); } },
+  end: settle,
+});
+handle.addEventListener("keydown", (e) => { if ((e.key === " " || e.key === "Enter") && phase !== "done" && !busy) { e.preventDefault(); phase === "idle" ? engage() : tryRegister(); } });
+
+function engage() { setT(1, true); sfx.clunk(); setTimeout(() => sfx.thud(), 120); phase = "live"; mach.classList.add("live"); }
+function tryRegister() {
+  const missing = E.points.filter((p) => !(sel[p.id] || []).length);
+  if (missing.length) {
+    setT(1, true); sfx.buzz();
+    missing.forEach((p) => { const el = $(`.panel[data-p="${p.id}"]`); el.classList.remove("warn"); void el.offsetWidth; el.classList.add("warn"); });
+    return;
+  }
+  register();
+}
+async function register() {
+  busy = true; phase = "done"; setT(0, true); sfx.clunk(); setTimeout(() => sfx.thud(), 120);
+  await wait(350);
+  for (const p of E.points) for (const id of sel[p.id]) { levers[p.id][id].show(false); sfx.tick(); await wait(110); }
+  sfx.ratchet(8); await wait(300);
+  odo(++count); await wait(750); sfx.ding();
+  mach.classList.remove("live"); mach.classList.add("done");
+  const tape = $("#tape");
+  tape.innerHTML = `${crest()}<b>VOTE REGISTERED</b><code>${code()}</code>${E.date}<br>COUNTER ${String(count).padStart(6, "0")}`;
+  await wait(400); tape.classList.add("out"); sfx.ratchet(14, 0.135);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Election platform · nine design studies</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* The sample board: nine swatches pinned in three rows, one row per tone. */
+* { box-sizing:border-box; margin:0; }
+body { min-height:100vh; padding:clamp(18px,4vw,48px); background:#22201d; color:#efe9dc; font-family:"IBM Plex Mono", ui-monospace, monospace;
+  background-image:repeating-linear-gradient(0deg, rgba(255,255,255,.018) 0 1px, transparent 1px 4px), radial-gradient(120% 80% at 50% 0%, #2f2c27, #1a1815); }
+header { max-width:1180px; margin:0 auto 26px; display:grid; gap:8px; }
+h1 { font:800 clamp(30px,5vw,54px)/1 "Fraunces", Georgia, serif; letter-spacing:-.01em; }
+header p { max-width:66ch; font-size:14px; line-height:1.55; color:#b9b1a0; }
+section { max-width:1180px; margin:0 auto 30px; }
+h2 { display:flex; align-items:baseline; gap:14px; padding-bottom:8px; margin-bottom:14px; border-bottom:1px solid #4a453c; font:600 22px/1 "Fraunces", serif; }
+h2 small { font:400 12px "IBM Plex Mono", monospace; color:#9c9484; letter-spacing:.04em; }
+.row { display:grid; grid-template-columns:repeat(auto-fit, minmax(270px, 1fr)); gap:18px; }
+a.sw { position:relative; display:grid; grid-template-rows:150px auto; color:inherit; text-decoration:none; background:#2b2823; border-radius:3px; overflow:hidden;
+  box-shadow:0 1px 0 #3b372f inset, 0 10px 22px rgba(0,0,0,.35); transition:transform .18s cubic-bezier(.3,1.4,.5,1); }
+a.sw:hover, a.sw:focus-visible { transform:translateY(-5px) rotate(-.6deg); outline:none; box-shadow:0 0 0 2px #efe9dc, 0 16px 30px rgba(0,0,0,.5); }
+a.sw::before { content:""; position:absolute; left:50%; top:-7px; width:14px; height:14px; margin-left:-7px; border-radius:50%; background:radial-gradient(circle at 35% 30%, #fff, #c9a14a 55%, #7a5a14); box-shadow:0 3px 4px rgba(0,0,0,.5); z-index:2; }
+.chip { position:relative; display:grid; place-items:center; overflow:hidden; }
+.chip b { font:800 54px/1 "Fraunces", serif; letter-spacing:-.02em; mix-blend-mode:normal; }
+.meta { padding:13px 14px 14px; display:grid; gap:6px; }
+.meta h3 { font:800 20px/1.05 "Fraunces", serif; }
+.meta p { font-size:12.5px; line-height:1.45; color:#b9b1a0; }
+.meta span { justify-self:start; margin-top:3px; padding:3px 8px; font-size:11px; letter-spacing:.06em; border:1px solid #5d574b; border-radius:20px; color:#d9d1bf; }
+
+.a1 { background:repeating-linear-gradient(90deg, #142a1c 0, #2d5a3e 20px, #1b3826 42px, #12261a 64px); color:#e2c06f; }
+.a2 { background:radial-gradient(60% 90% at 50% 100%, #1a2a52 0 60%, transparent 61%), linear-gradient(115deg, transparent 38%, rgba(110,120,145,.3) 38.5%, transparent 40%), #e7e3db; color:#c8a04a; }
+.a3 { background:radial-gradient(circle at 86% 30%, #b3241c 0 16px, transparent 17px), linear-gradient(160deg, #94a897, #5c7061); color:#16191a; }
+.b1 { background:repeating-linear-gradient(0deg, rgba(196,44,44,.5) 0 22px, transparent 22px 44px), repeating-linear-gradient(90deg, rgba(196,44,44,.5) 0 22px, transparent 22px 44px), #f8f2e7; color:#1d3f8a; }
+.b2 { background:conic-gradient(from 45deg, #0f4c5c 0 25%, transparent 0) 0 0 / 44px 44px, conic-gradient(from 225deg, #e36414 0 25%, transparent 0) 22px 22px / 44px 44px, #9a031e; color:#fff3b0; }
+.b3 { background:radial-gradient(circle at 22% 70%, #c22a2a 0 26px, transparent 27px), radial-gradient(circle at 50% 70%, #2456a6 0 26px, transparent 27px), radial-gradient(circle at 78% 70%, #d99a12 0 26px, transparent 27px), linear-gradient(#dd9450 0 62%, #cfae74 62%); color:#fff6e3; }
+.b3 b { transform:translateY(-34px); }
+.c1 { background:repeating-conic-gradient(from -34deg at 12% 118%, #c8201a 0 7deg, #efe4cc 7deg 14deg); color:#141210; }
+.c2 { background:radial-gradient(circle at 70% 96%, #ffd27a 0 46px, transparent 47px), linear-gradient(#1d2452, #4b3f80 34%, #c2607a 66%, #f39a5c); color:#fbf3df; }
+.c3 { background:repeating-linear-gradient(0deg, rgba(0,0,0,.35) 0 2px, transparent 2px 4px), radial-gradient(circle at 50% 50%, #1b2a6b, #080a1f); color:#ffe14a; text-shadow:0 0 14px #ff3fa4; }
+footer { max-width:1180px; margin:0 auto; font-size:12px; color:#8f8777; line-height:1.6; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Nine ways to cast a ballot</h1>
+  <p>Design studies for the election platform. Each one is the same sitting (Prime Minister, a referendum, a pick-two) played through from arrival to receipt, with sound. Three tones, three designs each, and the three gesture styles spread across them. Use the pill in the corner of a study to restart it, mute it, or come back here.</p>
+</header>
+
+<section>
+  <h2>A · Solemn <small>could pass for a real country's polling day</small></h2>
+  <div class="row">
+    <a class="sw" href="a1-booth.html"><div class="chip a1"><b>A1</b></div><div class="meta"><h3>The Booth</h3><p>Behind a green curtain: a pencil on a string, three tinted papers to cross and fold, a sealed steel box.</p><span>draw and drag, or tap</span></div></a>
+    <a class="sw" href="a2-rotunda.html"><div class="chip a2"><b>A2</b></div><div class="meta"><h3>The Rotunda</h3><p>Bronze doors, engraved cards, a fountain pen. One envelope closed with wax and dropped into a glass urn.</p><span>tap, then watch</span></div></a>
+    <a class="sw" href="a3-machine.html"><div class="chip a3"><b>A3</b></div><div class="meta"><h3>The Lever Machine</h3><p>A mechanical voting machine in hammertone enamel. Slide the levers, throw the red master lever, the counter rolls.</p><span>gestures only</span></div></a>
+  </div>
+</section>
+
+<section>
+  <h2>B · Serious craft, in-universe wit <small>dignified, with Grandpa Clifford looking over your shoulder</small></h2>
+  <div class="row">
+    <a class="sw" href="b1-postal.html"><div class="chip b1"><b>B1</b></div><div class="meta"><h3>The Postal Kit</h3><p>A postal vote at the kitchen table. Tear the strip, tick with a biro, tuck into "Nobody's Business", seal, post.</p><span>draw and drag, or tap</span></div></a>
+    <a class="sw" href="b2-punch.html"><div class="chip b2"><b>B2</b></div><div class="meta"><h3>The Punch Ticket</h3><p>The ballot is a card ticket and the vote is a hole. Chads fall, the orange machine eats it. Holes cannot be undone, only reissued.</p><span>tap, then watch</span></div></a>
+    <a class="sw" href="b3-marbles.html"><div class="chip b3"><b>B3</b></div><div class="meta"><h3>The Marble Poll</h3><p>Painted drums in a sunlit yard. One glass marble, one ding of the bell, and a finger dipped in indelible ink.</p><span>drag, or tap twice</span></div></a>
+  </div>
+</section>
+
+<section>
+  <h2>C · Full USFC bizarre <small>the country of the bizarre votes accordingly</small></h2>
+  <div class="row">
+    <a class="sw" href="c1-hotline.html"><div class="chip c1"><b>C1</b></div><div class="meta"><h3>The Hotline</h3><p>The red telephone to the Bureau of Counting. Lift the receiver, dial your opinion on a rotary dial, hang up to send.</p><span>gestures only</span></div></a>
+    <a class="sw" href="c2-cliff.html"><div class="chip c2"><b>C2</b></div><div class="meta"><h3>The Cliff</h3><p>In the Free Cliffs you vote by throwing it off one. Paper planes into candidates' balloons, then toll the bell.</p><span>throw, or tap</span></div></a>
+    <a class="sw" href="c3-omatic.html"><div class="chip c3"><b>C3</b></div><div class="meta"><h3>Democracy-O-Matic</h3><p>A BuildCorp-sponsored arcade cabinet. Insert one citizen, mash the glowing buttons, collect your sticker.</p><span>tap, then watch</span></div></a>
+  </div>
+</section>
+
+<footer>Studies only: the ballot data is a demo, nothing is stored, receipts are random. Fonts load from Google Fonts here; the real build will self-host them.</footer>
+</body>
+</html>

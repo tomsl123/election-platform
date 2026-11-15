@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>B2 · The Punch Ticket</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=VT323&display=swap" rel="stylesheet">
+<style>
+/* B2 · THE PUNCH TICKET — the ballot is a card ticket, the vote is a hole.
+   An orange machine prints it, a conductor's punch bites it, the machine eats it. One tap per act. */
+:root { --orange:#ef7d1a; --tw:min(390px,90vw); --mh:150px; --mt:max(46px,4.5vh); }
+* { box-sizing:border-box; margin:0; }
+html, body { height:100%; overflow:hidden; background:#3d0a1c; color:#1d1a16; font-family:"Saira Condensed", "Arial Narrow", sans-serif;
+  -webkit-user-select:none; user-select:none; -webkit-tap-highlight-color:transparent; }
+.car { position:fixed; inset:0; overflow:hidden; background:
+  radial-gradient(120% 90% at 50% 35%, transparent 30%, rgba(20,0,10,.75)),
+  repeating-linear-gradient(0deg, rgba(0,0,0,.14) 0 1px, transparent 1px 3px),
+  conic-gradient(from 45deg, #0f4c5c 0 25%, transparent 0) 0 0 / 68px 68px,
+  conic-gradient(from 225deg, #e36414 0 25%, transparent 0) 34px 34px / 68px 68px,
+  linear-gradient(45deg, #5f0f40 25%, transparent 25% 75%, #5f0f40 75%) 0 0 / 68px 68px, #9a031e; }
+.pole { position:absolute; left:50%; top:0; bottom:0; width:30px; margin-left:-15px; background:linear-gradient(90deg, #a67c00, #ffd43b 40%, #fff3b0 52%, #d9a400 75%, #8f6b00); box-shadow:0 0 22px rgba(0,0,0,.5); }
+
+/* ── the machine ── */
+.machine { position:absolute; left:50%; top:var(--mt); width:calc(var(--tw) + 44px); height:var(--mh); margin-left:calc((var(--tw) + 44px) / -2); z-index:5; padding:12px 16px;
+  border-radius:22px 22px 12px 12px; background:linear-gradient(#ff9a3c, var(--orange) 45%, #c85f08); box-shadow:0 14px 26px rgba(0,0,0,.55), inset 0 2px 0 rgba(255,255,255,.4), inset 0 -8px 0 rgba(0,0,0,.18);
+  display:grid; grid-template-columns:1fr auto; grid-template-rows:auto 1fr; gap:6px 12px; }
+.machine.kick { animation:kick .22s; } @keyframes kick { 40% { transform:translateY(4px); } }
+.brand { grid-column:1 / -1; font-size:12px; font-weight:700; letter-spacing:.3em; color:#4a2200; display:flex; align-items:center; gap:8px; }
+.brand .crest { width:17px; }
+.lcd { align-self:stretch; display:grid; place-items:center; padding:4px 10px; border-radius:6px; background:#1d2b14; color:#b6f36a; font:400 clamp(21px,5.4vw,27px)/1 "VT323", monospace; letter-spacing:.06em; text-align:center;
+  box-shadow:inset 0 3px 8px #000, 0 0 0 3px #7a3c05; text-shadow:0 0 8px rgba(182,243,106,.55); white-space:nowrap; overflow:hidden; }
+.lcd.blink span { animation:lcd 1s steps(2) infinite; } @keyframes lcd { 50% { opacity:.25; } }
+.side { display:flex; align-items:center; gap:10px; }
+.lamps { display:grid; gap:7px; }
+.lamp { width:13px; height:13px; border-radius:50%; background:#3b1407; box-shadow:inset 0 1px 2px #000, 0 0 0 2px #7a3c05; }
+.lamp.r.on { background:#ff4a3a; box-shadow:0 0 12px #ff4a3a, 0 0 0 2px #7a3c05; } .lamp.g.on { background:#6cf08a; box-shadow:0 0 12px #6cf08a, 0 0 0 2px #7a3c05; }
+.go { width:62px; height:62px; border-radius:50%; border:0; cursor:pointer; color:#063d17; background:radial-gradient(circle at 35% 30%, #c9ffd6, #3ecf63 55%, #1c8d3c); box-shadow:0 0 0 4px #7a3c05, 0 5px 0 4px #5a2b03, 0 0 22px rgba(108,240,138,.7);
+  display:grid; place-items:center; animation:glow 1.1s ease-in-out infinite; transition:transform .08s, filter .4s; }
+.go:active { transform:translateY(4px); } .go.used { animation:none; filter:grayscale(.8) brightness(.7); box-shadow:0 0 0 4px #7a3c05, 0 5px 0 4px #5a2b03; pointer-events:none; }
+@keyframes glow { 50% { box-shadow:0 0 0 4px #7a3c05, 0 5px 0 4px #5a2b03, 0 0 6px rgba(108,240,138,.3); } }
+.go svg { width:28px; fill:none; stroke:currentColor; stroke-width:3.4; stroke-linecap:round; stroke-linejoin:round; }
+.go:focus-visible, .tk li:focus-visible, .feedb:focus-visible, .spoil:focus-visible { outline:3px solid #fff; outline-offset:3px; }
+.lip { position:absolute; left:16px; right:16px; bottom:-7px; height:12px; border-radius:0 0 8px 8px; background:#1a0d02; box-shadow:0 2px 0 rgba(255,255,255,.25); }
+
+/* ── the ticket ── */
+.feed { position:absolute; left:50%; top:calc(var(--mt) + var(--mh) - 2px); bottom:0; width:calc(var(--tw) + 30px); margin-left:calc((var(--tw) + 30px) / -2); overflow:hidden; z-index:4; pointer-events:none; }
+.tk { position:absolute; left:15px; top:0; width:var(--tw); pointer-events:auto; background:var(--c); padding:12px 16px 14px; transform:translateY(-104%); filter:drop-shadow(0 10px 10px rgba(0,0,0,.45));
+  background-image:repeating-radial-gradient(circle at 0 0, rgba(0,0,0,.05) 0 1px, transparent 1px 9px), repeating-radial-gradient(circle at 100% 100%, rgba(0,0,0,.05) 0 1px, transparent 1px 9px);
+  -webkit-mask:radial-gradient(circle at 6px 100%, transparent 4.5px, #000 5px) -6px 0 / 12px 100%; mask:radial-gradient(circle at 6px 100%, transparent 4.5px, #000 5px) -6px 0 / 12px 100%; }
+.tk.print { transform:none; transition:transform 1.15s steps(12); }
+.tk.eat { transform:translateY(-104%); transition:transform .55s cubic-bezier(.6,0,.8,.5); }
+.tk.shake { animation:shake .3s; } @keyframes shake { 25% { translate:-7px 0; } 75% { translate:7px 0; } }
+.tk header { display:grid; grid-template-columns:1fr auto; gap:8px; align-items:end; padding-bottom:8px; border-bottom:2px solid #1d1a16; }
+.tk header small { display:block; font-size:11px; font-weight:600; letter-spacing:.22em; opacity:.7; }
+.tk h2 { font-size:30px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; line-height:1; }
+.tk header b { font:400 26px/1 "VT323", monospace; padding:2px 8px; background:#1d1a16; color:var(--c); }
+.tk > em { display:block; font-style:normal; font-size:15px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; padding:7px 0 3px; }
+.tk ul { list-style:none; padding:0; }
+.tk li { display:grid; grid-template-columns:28px 1fr 42px; gap:10px; align-items:center; height:50px; border-top:1px dashed rgba(29,26,22,.5); cursor:pointer; }
+.tk li .sym { width:24px; height:24px; display:block; }
+.tk .nm { font-size:21px; font-weight:600; letter-spacing:.03em; line-height:1; } .tk .nm small { font-size:12px; font-weight:600; letter-spacing:.18em; opacity:.6; margin-left:8px; }
+.hole { position:relative; width:38px; height:38px; border-radius:50%; border:2px dashed rgba(29,26,22,.7); display:grid; place-items:center; font:400 20px "VT323", monospace; }
+li.on .hole { border:0; color:transparent; background:radial-gradient(circle at 50% 30%, #060304, #2a0a14 70%); box-shadow:inset 0 3px 5px #000, 0 1px 0 rgba(255,255,255,.5); }
+.tk footer { display:flex; align-items:center; gap:10px; padding-top:10px; border-top:2px solid #1d1a16; }
+.tk footer span { flex:1; font-size:10.5px; font-weight:600; letter-spacing:.14em; line-height:1.2; opacity:.7; }
+.spoil { border:1.5px dashed #1d1a16; background:none; cursor:pointer; padding:5px 8px; font:600 11px "Saira Condensed", sans-serif; letter-spacing:.12em; color:#1d1a16; border-radius:4px; }
+.spoil.pulse { animation:pulse .35s 3; } @keyframes pulse { 50% { background:#b3241c; color:#fff; } }
+.feedb { border:0; height:42px; padding:0 14px; cursor:pointer; color:#fff; background:#1d1a16; border-radius:6px; font:700 15px "Saira Condensed", sans-serif; letter-spacing:.16em; display:flex; align-items:center; gap:6px;
+  transform:scale(0); transition:transform .3s cubic-bezier(.3,1.5,.5,1); }
+.tk.ready .feedb { transform:scale(1); }
+.feedb svg { width:18px; fill:none; stroke:currentColor; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; animation:up 1s ease-in-out infinite; } @keyframes up { 50% { transform:translateY(-4px); } }
+.void { position:absolute; left:50%; top:46%; padding:4px 16px; border:5px solid #b3241c; color:#b3241c; font-size:44px; font-weight:700; letter-spacing:.14em; opacity:0; transform:translate(-50%,-50%) rotate(-14deg) scale(2.6); pointer-events:none; }
+.tk.spoiled .void { animation:slam .2s cubic-bezier(.6,0,1,.4) forwards; } @keyframes slam { to { opacity:.9; transform:translate(-50%,-50%) rotate(-14deg) scale(1); } }
+.tk.stub { text-align:center; padding:16px; } .tk.stub h2 { font-size:24px; } .tk.stub code { display:block; font:400 30px "VT323", monospace; margin:8px 0; padding:6px 0; border-block:2px dashed #1d1a16; }
+.tk.stub p { font-size:13px; font-weight:600; letter-spacing:.1em; line-height:1.3; } .tk.stub .crest { width:30px; }
+
+.punch { position:fixed; left:0; top:0; width:150px; height:110px; margin:-34px 0 0 -22px; pointer-events:none; z-index:9; opacity:0; filter:drop-shadow(5px 9px 5px rgba(0,0,0,.5)); }
+.chad { position:fixed; border-radius:50%; pointer-events:none; z-index:8; box-shadow:0 1px 2px rgba(0,0,0,.4); }
+
+@media (max-height:700px) { :root { --mh:128px; } .tk li { height:44px; } .tk h2 { font-size:25px; } .go { width:52px; height:52px; } }
+@media (prefers-reduced-motion:reduce) { * { animation-duration:.01s !important; transition-duration:.01s !important; } }
+</style>
+</head>
+<body>
+<main class="car">
+  <div class="pole"></div>
+  <div class="machine" id="machine">
+    <div class="brand"><span id="bc"></span>PEACEFUL TRANSIT OF POWER AUTHORITY</div>
+    <div class="lcd blink" id="lcd" role="status"><span>PRESS FOR BALLOT &gt;</span></div>
+    <div class="side"><div class="lamps"><i class="lamp r" id="lr"></i><i class="lamp g" id="lg"></i></div>
+      <button class="go" id="go" aria-label="Print my ballot tickets"><svg viewBox="0 0 24 24"><path d="M12 4v14M5 12l7 7 7-7"/></svg></button></div>
+    <div class="lip"></div>
+  </div>
+  <div class="feed" id="feed"></div>
+  <svg class="punch" id="punch" viewBox="0 0 150 110"><path d="M22 34L128 6c10-2 16 6 10 14L62 44z" fill="#cfd4d6"/><path d="M22 34l100 52c9 4 17-3 13-12L62 30z" fill="#aab1b4"/><circle cx="58" cy="37" r="8" fill="#6b7377"/><circle cx="22" cy="34" r="12" fill="#e8ecee"/><circle cx="22" cy="34" r="5" fill="#2a2a2a"/><path d="M96 16l34-9c8-1 12 5 8 11l-8 9z" fill="#b3241c"/><path d="M96 72l26 14c7 3 13-2 10-9l-5-10z" fill="#8e1a14"/></svg>
+</main>
+
+<script src="shared.js"></script>
+<script>
+const { $, $$, wait, election: E, sym, crest, sfx, centre, code, chrome, rnd } = EP;
+chrome({ code: "B2", name: "The Punch Ticket" });
+
+const feed = $("#feed"), lcd = $("#lcd"), machine = $("#machine"), punch = $("#punch");
+const COL = ["#f4b6a6", "#b9e3c6", "#f3e3a1"];
+const sel = {}; let idx = 0, busy = true, serial = 41273;
+const say = (t, blink) => { lcd.innerHTML = `<span>${t}</span>`; lcd.classList.toggle("blink", !!blink); };
+const lamp = (r, g) => { $("#lr").classList.toggle("on", r); $("#lg").classList.toggle("on", g); };
+const kick = () => { machine.classList.remove("kick"); void machine.offsetWidth; machine.classList.add("kick"); };
+$("#bc").innerHTML = crest();
+
+$("#go").onclick = () => { $("#go").classList.add("used"); sfx.click(); print(); };
+
+async function print() {
+  const p = E.points[idx]; busy = true; sel[p.id] = [];
+  say(`PRINTING ${p.no}/3`); lamp(false, false);
+  const tk = document.createElement("article"); tk.className = "tk"; tk.style.setProperty("--c", COL[idx]); tk.setAttribute("aria-label", p.title);
+  tk.innerHTML = `<header><div><small>${E.short} · NO. ${serial++} · NOT TRANSFERABLE</small><h2>${p.title}</h2></div><b>${p.no}/3</b></header>
+    <em>${p.max > 1 ? "Punch up to " + p.max : p.kind === "yesno" ? p.ask : "Punch one"}</em>
+    <ul>${p.options.map((o, i) => `<li data-id="${o.id}" role="checkbox" aria-checked="false" tabindex="0"><span style="color:${o.color}">${sym(o.sym)}</span>
+      <span class="nm">${o.full}${o.party ? `<small>${o.party}</small>` : ""}</span><span class="hole">${i + 1}</span></li>`).join("")}</ul>
+    <footer><button class="spoil" aria-label="Spoiled it? Get a new ticket">&#8634; SPOILED?</button><span>HANGING CHADS ARE<br>A FEDERAL OFFENCE</span>
+      <button class="feedb" aria-label="Feed the ticket into the machine" tabindex="-1"><svg viewBox="0 0 20 20"><path d="M10 17V4M4 10l6-6 6 6"/></svg>FEED</button></footer>
+    <div class="void">SPOILED</div>`;
+  feed.append(tk); await wait(40); tk.classList.add("print"); sfx.ratchet(12, 0.095);
+  await wait(1200); tk.classList.remove("print"); tk.style.transform = "none";
+  say("PUNCH, THEN FEED ^", true); busy = false;
+
+  const refuse = () => { tk.classList.remove("shake"); void tk.offsetWidth; tk.classList.add("shake"); sfx.buzz(); const s = $(".spoil", tk); s.classList.remove("pulse"); void s.offsetWidth; s.classList.add("pulse"); };
+  async function bite(li) {
+    if (busy) return;
+    const cur = sel[p.id], id = li.dataset.id;
+    if (cur.includes(id) || cur.length >= p.max) return refuse();   /* a hole cannot be un-punched */
+    busy = true; cur.push(id);
+    const c = centre($(".hole", li));
+    punch.animate([
+      { transform: `translate(${c.x + 150}px,${c.y + 90}px) rotate(22deg)`, opacity: 0 },
+      { transform: `translate(${c.x}px,${c.y}px) rotate(0)`, opacity: 1, offset: 0.4 },
+      { transform: `translate(${c.x}px,${c.y}px) rotate(0) scale(.92)`, opacity: 1, offset: 0.5 },
+      { transform: `translate(${c.x}px,${c.y}px) rotate(0)`, opacity: 1, offset: 0.66 },
+      { transform: `translate(${c.x + 170}px,${c.y + 70}px) rotate(18deg)`, opacity: 0 },
+    ], { duration: 800, easing: "ease-in-out" });
+    await wait(390); sfx.clunk(); li.classList.add("on"); li.setAttribute("aria-checked", "true");
+    for (let i = 0; i < 4; i++) {
+      const ch = document.createElement("i"); ch.className = "chad"; const s = i ? rnd(3, 6) : 15;
+      ch.style.cssText = `left:${c.x}px;top:${c.y}px;width:${s}px;height:${s}px;background:${COL[idx]}`; document.body.append(ch);
+      ch.animate([{ transform: "translate(-50%,-50%)" }, { transform: `translate(${rnd(-80, 80)}px,${rnd(300, 520)}px) rotateX(${rnd(300, 900)}deg) rotate(${rnd(-300, 300)}deg)` }],
+        { duration: rnd(800, 1300), easing: "cubic-bezier(.3,0,.9,.7)" }).onfinish = () => ch.remove();
+    }
+    await wait(330); busy = false;
+    tk.classList.add("ready"); $(".feedb", tk).tabIndex = 0;
+  }
+  $$("li", tk).forEach((li) => { li.onclick = () => bite(li); li.onkeydown = (e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); bite(li); } }; });
+
+  $(".spoil", tk).onclick = async () => {
+    if (busy) return; busy = true;
+    tk.classList.add("spoiled"); await wait(220); sfx.thud(); say("SPOILED. REISSUING"); lamp(true, false);
+    await wait(700); tk.classList.add("eat"); sfx.paper(); await wait(560); kick(); sfx.buzz(); tk.remove();
+    await wait(400); print();
+  };
+  $(".feedb", tk).onclick = async () => {
+    if (busy || !tk.classList.contains("ready")) return; busy = true;
+    say("CHECKING..."); tk.classList.add("eat"); sfx.paper();
+    await wait(560); kick(); sfx.clunk(); await wait(160); sfx.thud(); tk.remove();
+    await wait(350); lamp(false, true); say(`VALID ${p.no}/3`); sfx.ding();
+    await wait(800); idx++;
+    if (idx < E.points.length) print(); else finish();
+  };
+}
+
+async function finish() {
+  say("ALL VALID. THANK YOU"); sfx.bell(); setTimeout(() => sfx.bell(), 380);
+  await wait(900);
+  const tk = document.createElement("article"); tk.className = "tk stub"; tk.style.setProperty("--c", "#f6f1e4"); tk.setAttribute("role", "status");
+  tk.innerHTML = `${crest()}<h2>Validated</h2><code>${code()}</code><p>RETAIN FOR INSPECTION.<br>INSPECTORS OPERATE ON THIS LINE.</p><p style="opacity:.6;margin-top:6px">${E.name.toUpperCase()} · ${E.date}</p>`;
+  feed.append(tk); await wait(40); tk.classList.add("print"); sfx.ratchet(12, 0.095);
+}
+</script>
+</body>
+</html>
