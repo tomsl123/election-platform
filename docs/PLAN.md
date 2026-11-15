@@ -11,7 +11,7 @@ Tick a phase only when its "Done when" list passes and its commit exists. Note a
 - [x] Phase 4 — Voting core
 - [x] Phase 5 — Fraud layer
 - [x] Phase 6 — Counting, results, the remaining ballot types
-- [ ] Phase 7 — Constituencies end to end
+- [x] Phase 7 — Constituencies end to end
 - [ ] Phase 8 — Notifications (SMTP + Discord)
 - [ ] Phase 9 — Nominations
 - [ ] Phase 10 — Discord role roll

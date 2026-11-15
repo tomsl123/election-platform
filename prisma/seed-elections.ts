@@ -44,4 +44,36 @@ export async function seedElections(db: PrismaClient, orgId: string, ownerId: st
   ].entries()) {
     await db.option.create({ data: { contestId: jk.id, position: i, name, color, symbol } });
   }
+
+  // A constituency election: party lists in every Cliff, fifty seats each, shared by D'Hondt.
+  const set = await db.districtSet.findFirst({ where: { orgId, name: "Cliffs" }, include: { districts: { orderBy: { position: "asc" } } } });
+  if (set) {
+    const ng = await db.election.create({
+      data: {
+        orgId,
+        slug: "national-gathering",
+        title: "National Gathering",
+        summary: "Fifty representatives from every Cliff, by party list.",
+        status: "OPEN",
+        access: "PUBLIC",
+        routes: JSON.stringify(["EMAIL_CODE"]),
+        fraud: JSON.stringify(defaultPolicy("PUBLIC")),
+        districtSetId: set.id,
+        districtAssign: "SELF",
+        resultsMode: "LIVE",
+        openedAt: new Date(),
+        closesAt: week,
+        createdById: ownerId,
+      },
+    });
+    const c = await db.contest.create({ data: { electionId: ng.id, position: 0, title: "National Gathering", method: "PARTY_LIST", scope: "PER_DISTRICT", seats: 50, rule: JSON.stringify({ pr: "DHONDT", prThresholdPct: 5, allowBlank: false }) } });
+    const names = ["Simons", "Salzburg", "Predkozkyn", "Planovsky", "Rootman", "Norton", "Harper", "Revolton", "Cheap", "Naran", "Tudlenudle", "Gorgonzola"];
+    for (const d of set.districts) {
+      for (const [i, abbr] of ["UPSF", "CUP", "CA", "KKKK"].entries()) {
+        const p = parties[abbr];
+        const opt = await db.option.create({ data: { contestId: c.id, districtId: d.id, position: i, name: `${p?.name ?? abbr}`, subtitle: abbr, partyId: p?.id, color: p?.color ?? "#23201c", symbol: p?.symbol ?? "" } });
+        for (let k = 0; k < 6; k++) await db.listCandidate.create({ data: { optionId: opt.id, position: k, name: `${names[(i * 3 + k + d.position) % names.length]} of ${d.code}` } });
+      }
+    }
+  }
 }
