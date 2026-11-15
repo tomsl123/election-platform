@@ -9,7 +9,7 @@ Tick a phase only when its "Done when" list passes and its commit exists. Note a
 - [x] Phase 2 — The Booth as a component library
 - [x] Phase 3 — The office: elections, ballots, register
 - [x] Phase 4 — Voting core
-- [ ] Phase 5 — Fraud layer
+- [x] Phase 5 — Fraud layer
 - [ ] Phase 6 — Counting, results, the remaining ballot types
 - [ ] Phase 7 — Constituencies end to end
 - [ ] Phase 8 — Notifications (SMTP + Discord)

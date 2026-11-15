@@ -39,6 +39,13 @@ async function evidence(device: Device | undefined, email?: string | null) {
   return { ip: meta.ip, userAgent: meta.userAgent, deviceId: clean(device?.deviceId, 64), deviceFp: clean(device?.fp, 128), email: email ?? null };
 }
 
+function blockedHint(reasons: string[]): "station.blocked.hint" | "station.blocked.device" | "station.blocked.email" | "station.blocked.other" {
+  if (reasons.some((r) => ["VPN", "TOR", "PROXY_API", "DATACENTER"].includes(r))) return "station.blocked.hint";
+  if (reasons.some((r) => r.startsWith("DEVICE"))) return "station.blocked.device";
+  if (reasons.some((r) => r === "DISPOSABLE_EMAIL" || r === "NO_MX")) return "station.blocked.email";
+  return "station.blocked.other";
+}
+
 function signFor(r: AdmitResult, dict: ReturnType<typeof getDict>, when?: Date | null, tz?: string): SignSpec | null {
   switch (r.outcome) {
     case "ALREADY":
@@ -46,7 +53,7 @@ function signFor(r: AdmitResult, dict: ReturnType<typeof getDict>, when?: Date |
     case "NOT_ON_ROLL":
       return { kind: "notOnRoll", title: t(dict, "station.notOnRoll") };
     case "BLOCK":
-      return { kind: "blocked", title: t(dict, "station.blocked"), text: t(dict, "station.blocked.hint"), red: true };
+      return { kind: "blocked", title: t(dict, "station.blocked"), text: t(dict, blockedHint(r.reasons)), red: true };
     case "CLOSED":
       return { kind: "closed", title: t(dict, "station.closed") };
     case "NOT_YET":

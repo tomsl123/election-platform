@@ -25,6 +25,16 @@ export function startClock() {
     },
   });
   registerJob({
+    name: "privacy",
+    run: async (now) => {
+      // Thirty days after certification, the evidence gathered at the desk is wiped from the roll.
+      const cutoff = new Date(now.getTime() - 30 * 86400_000);
+      const old = await db.election.findMany({ where: { status: { in: ["CERTIFIED", "CANCELLED"] }, OR: [{ certifiedAt: { lte: cutoff } }, { certifiedAt: null, closedAt: { lte: cutoff } }] }, select: { id: true } });
+      if (old.length)
+        await db.rollEntry.updateMany({ where: { electionId: { in: old.map((e) => e.id) }, OR: [{ ipEnc: { not: "" } }, { deviceId: { not: "" } }, { deviceFp: { not: "" } }] }, data: { ipEnc: "", ipHash: "", deviceId: "", deviceFp: "", uaHash: "" } });
+    },
+  });
+  registerJob({
     name: "ip lists",
     run: async () => {
       const { refreshIpLists } = await import("./ipintel");
