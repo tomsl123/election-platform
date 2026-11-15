@@ -6,7 +6,7 @@ Tick a phase only when its "Done when" list passes and its commit exists. Note a
 
 - [x] Phase 0 — Bootstrap
 - [x] Phase 1 — Foundations: data, accounts, organisations, i18n
-- [ ] Phase 2 — The Booth as a component library
+- [x] Phase 2 — The Booth as a component library
 - [ ] Phase 3 — The office: elections, ballots, register
 - [ ] Phase 4 — Voting core
 - [ ] Phase 5 — Fraud layer
@@ -18,6 +18,11 @@ Tick a phase only when its "Done when" list passes and its commit exists. Note a
 - [ ] Phase 11 — Public API, webhooks, UCTV feed
 - [ ] Phase 12 — Hardening and delivery
 - [ ] Phase 13 — Shared sign-in: Parliament vouches
+
+## Deviations
+
+- Phase 2: the registration desk (Desk.tsx) is built in Phase 4 together with its real check-in flow; PollingStation already has the desk slot. RankBox and ScoreRow were built in Phase 2 (they share the paper code). The booth casts when the last slip is dropped, not when the last paper is folded.
+- Phase 2: station.css and office.css are scoped (CSS nesting under .station / .office) so the two looks never collide during client-side navigation.
 
 ## Context
 

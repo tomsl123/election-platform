@@ -150,7 +150,7 @@ export default async function SettingsPage({ params, searchParams }: { params: P
       </div>
 
       <Sheet title={<h2>Colours and crest</h2>} lede="How the polling station looks for this organisation.">
-        <form action={saveBrandAction} className="stack" encType="multipart/form-data">
+        <form action={saveBrandAction} className="stack">
           <input type="hidden" name="org" value={org.slug} />
           <div className="grid2">
             <div className="stack">
