@@ -1,0 +1,477 @@
+// Polling Station data model.
+// SQLite has no enums, so enumerated values are strings; the allowed values are
+// listed beside each field and typed in src/lib/types.ts.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ── Platform, organisations, staff ──────────────────────────────────────────
+
+model Organisation {
+  id        String   @id @default(cuid())
+  slug      String   @unique // "usfc"
+  name      String // "United States of Free Cliffs"
+  shortName String // "USFC"
+  locale    String   @default("en")
+  timezone  String   @default("Europe/Prague")
+  brand     String   @default("{}") // JSON Brand
+  smtp      String   @default("{}") // JSON OrgSmtp, password encrypted
+  discord   String   @default("{}") // JSON OrgDiscord, secrets encrypted
+  uctv      String   @default("{}") // JSON OrgUctv, api key encrypted
+  createdAt DateTime @default(now())
+
+  members      OrgMember[]
+  parties      Party[]
+  districtSets DistrictSet[]
+  register     RegisterEntry[]
+  elections    Election[]
+  uploads      Upload[]
+  apiKeys      ApiKey[]
+  webhooks     Webhook[]
+}
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  displayName     String
+  passwordHash    String?
+  totpSecretEnc   String?
+  totpEnabled     Boolean   @default(false)
+  isPlatformAdmin Boolean   @default(false)
+  status          String    @default("ACTIVE") // ACTIVE | SUSPENDED
+  ssoSource       String? // "parliament" when created through shared sign-in
+  createdAt       DateTime  @default(now())
+  lastLoginAt     DateTime?
+
+  sessions    Session[]
+  tokens      Token[]
+  memberships OrgMember[]
+}
+
+model OrgMember {
+  id        String       @id @default(cuid())
+  orgId     String
+  org       Organisation @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String // OWNER | OFFICER | OBSERVER
+  createdAt DateTime     @default(now())
+
+  @@unique([orgId, userId])
+}
+
+model Session {
+  id        String   @id // sha256 of the cookie token
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  lastSeen  DateTime @default(now())
+  signedAt  DateTime?
+  ip        String   @default("")
+  userAgent String   @default("")
+
+  @@index([userId])
+}
+
+// Single-purpose secrets: invitations, resets, one-time voting links, e-mail codes, OAuth states.
+model Token {
+  id          String    @id @default(cuid())
+  purpose     String // INVITE | RESET | SIGNIN | VOTE | EMAIL_CODE | SSO_NONCE | OAUTH_STATE | NOMINATION | SUPPORT
+  tokenHash   String    @unique
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email       String?
+  electionId  String?
+  rollEntryId String?
+  payload     String    @default("{}")
+  attempts    Int       @default(0)
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdBy   String?
+
+  @@index([purpose, userId])
+  @@index([purpose, electionId])
+}
+
+// ── Standing data of an organisation ────────────────────────────────────────
+
+model Party {
+  id       String       @id @default(cuid())
+  orgId    String
+  org      Organisation @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  name     String
+  abbr     String
+  color    String       @default("#23201c")
+  symbol   String       @default("") // built-in symbol key
+  position Int          @default(0)
+}
+
+model DistrictSet {
+  id        String       @id @default(cuid())
+  orgId     String
+  org       Organisation @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  name      String // "Cliffs", "Senate districts"
+  districts District[]
+}
+
+model District {
+  id       String      @id @default(cuid())
+  setId    String
+  set      DistrictSet @relation(fields: [setId], references: [id], onDelete: Cascade)
+  name     String
+  code     String
+  seats    Int         @default(1)
+  position Int         @default(0)
+
+  @@unique([setId, code])
+}
+
+// The organisation's standing register of voters (invite-only elections draw from it).
+model RegisterEntry {
+  id            String             @id @default(cuid())
+  orgId         String
+  org           Organisation       @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  displayName   String
+  email         String? // normalised
+  emailKey      String? // alias-folded, see src/lib/email.ts
+  userId        String?
+  discordUserId String?
+  status        String             @default("ACTIVE") // ACTIVE | STRUCK
+  note          String             @default("")
+  createdAt     DateTime           @default(now())
+  districts     RegisterDistrict[]
+
+  @@unique([orgId, emailKey])
+}
+
+model RegisterDistrict {
+  id         String        @id @default(cuid())
+  entryId    String
+  entry      RegisterEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  setId      String
+  districtId String
+
+  @@unique([entryId, setId])
+}
+
+// ── Elections ───────────────────────────────────────────────────────────────
+
+model Election {
+  id                 String       @id @default(cuid())
+  orgId              String
+  org                Organisation @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  slug               String
+  title              String
+  summary            String       @default("")
+  status             String       @default("DRAFT") // DRAFT | NOMINATIONS | READY | OPEN | CLOSED | COUNTED | CERTIFIED | CANCELLED
+  access             String       @default("PUBLIC") // PUBLIC | INVITE
+  routes             String       @default("[\"EMAIL_CODE\"]") // JSON array: EMAIL_CODE | LINK | ACCOUNT | DISCORD | CODE
+  transparency       String       @default("SECRET") // SECRET | WHO_VOTED | SHOW_OF_HANDS
+  handsLive          Boolean      @default(false)
+  resultsMode        String       @default("SEALED") // SEALED | LIVE
+  turnoutLive        Boolean      @default(true)
+  allowRevote        Boolean      @default(false)
+  districtSetId      String?
+  districtAssign     String       @default("NONE") // NONE | REGISTER | SELF
+  fraud              String       @default("{}") // JSON FraudPolicy
+  heldDefault        String       @default("WAIT") // WAIT | ACCEPT | REJECT
+  notices            String       @default("{}") // JSON NoticeSwitches
+  discordRoleIds     String       @default("[]")
+  discordMinAgeDays  Int          @default(0)
+  nominationsOpenAt  DateTime?
+  nominationsCloseAt DateTime?
+  opensAt            DateTime?
+  closesAt           DateTime?
+  openedAt           DateTime?
+  closedAt           DateTime?
+  rollPublishedAt    DateTime?
+  round              Int          @default(1)
+  parentId           String?
+  runoffAfterHours   Int?
+  runoffLastsHours   Int?
+  eligibleCount      Int          @default(0)
+  result             String?
+  resultHash         String?
+  seal               String?
+  chainHead          String?
+  countedAt          DateTime?
+  certifiedAt        DateTime?
+  certifiedById      String?
+  uctvElectionId     String?
+  reminderSentAt     DateTime?
+  heldDigestAt       DateTime?
+  createdById        String?
+  createdAt          DateTime     @default(now())
+
+  contests    Contest[]
+  roll        RollEntry[]
+  codes       AccessCode[]
+  passes      BoothPass[]
+  envelopes   Envelope[]
+  ballots     Ballot[]
+
+  @@unique([orgId, slug])
+  @@index([status, opensAt])
+  @@index([status, closesAt])
+}
+
+// One ballot paper. An election has 1..n contests, all voted on in one sitting.
+model Contest {
+  id          String            @id @default(cuid())
+  electionId  String
+  election    Election          @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  position    Int               @default(0)
+  title       String
+  instruction String            @default("")
+  method      String            @default("SINGLE") // SINGLE | MULTI | YESNO | RANKED | SCORE | PARTY_LIST
+  maxChoices  Int               @default(1)
+  seats       Int               @default(1)
+  scope       String            @default("NATIONAL") // NATIONAL | PER_DISTRICT
+  rule        String            @default("{}") // JSON ContestRule
+  options     Option[]
+  districts   ContestDistrict[]
+  ballots     Ballot[]
+}
+
+model ContestDistrict {
+  id         String  @id @default(cuid())
+  contestId  String
+  contest    Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  districtId String
+  seats      Int
+
+  @@unique([contestId, districtId])
+}
+
+model Option {
+  id               String              @id @default(cuid())
+  contestId        String
+  contest          Contest             @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  districtId       String?
+  name             String
+  subtitle         String              @default("")
+  partyId          String?
+  color            String              @default("#23201c")
+  symbol           String              @default("")
+  photoId          String?
+  statement        String              @default("")
+  kind             String              @default("CHOICE") // CHOICE | YES | NO
+  status           String              @default("APPROVED") // APPROVED | PENDING | REJECTED | WITHDRAWN
+  nominatedByEmail String?
+  position         Int                 @default(0)
+  createdAt        DateTime            @default(now())
+  listCandidates   ListCandidate[]
+  supports         NominationSupport[]
+}
+
+model ListCandidate {
+  id       String @id @default(cuid())
+  optionId String
+  option   Option @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  position Int
+  name     String
+}
+
+model NominationSupport {
+  id          String   @id @default(cuid())
+  optionId    String
+  option      Option   @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  emailKey    String
+  displayName String
+  createdAt   DateTime @default(now())
+
+  @@unique([optionId, emailKey])
+}
+
+// One line in the election's register per person invited or admitted.
+model RollEntry {
+  id              String    @id @default(cuid())
+  electionId      String
+  election        Election  @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  identityKey     String // "email:<hmac>" | "user:<id>" | "reg:<id>" | "discord:<id>" | "code:<id>"
+  route           String // EMAIL_CODE | LINK | ACCOUNT | DISCORD | CODE
+  registerEntryId String?
+  userId          String?
+  emailEnc        String? // encrypted, for notices only
+  emailMasked     String    @default("")
+  displayName     String    @default("")
+  nameStruck      Boolean   @default(false)
+  districtId      String?
+  status          String    @default("INVITED") // INVITED | CHECKED_IN | VOTED | HELD | REJECTED | BLOCKED
+  votedAt         DateTime? // only for SHOW_OF_HANDS
+  ipHash          String    @default("")
+  ipEnc           String    @default("")
+  deviceId        String    @default("")
+  deviceFp        String    @default("")
+  uaHash          String    @default("")
+  signals         String    @default("[]")
+  createdAt       DateTime  @default(now())
+
+  @@unique([electionId, identityKey])
+  @@index([electionId, ipHash])
+  @@index([electionId, deviceId])
+  @@index([electionId, deviceFp])
+}
+
+model AccessCode {
+  id         String    @id @default(cuid())
+  electionId String
+  election   Election  @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  codeHash   String    @unique
+  batch      String
+  label      String    @default("")
+  districtId String?
+  usedAt     DateTime?
+  createdAt  DateTime  @default(now())
+}
+
+model BoothPass {
+  id          String    @id // sha256 of the cookie token
+  electionId  String
+  election    Election  @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  rollEntryId String
+  hold        Boolean   @default(false)
+  reasons     String    @default("[]")
+  tokenId     String? // one-time link consumed with the sitting
+  issuedAt    DateTime  @default(now())
+  expiresAt   DateTime
+  usedAt      DateTime?
+}
+
+// A provisional envelope: a sitting held for an officer's decision.
+model Envelope {
+  id          String    @id @default(cuid())
+  electionId  String
+  election    Election  @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  rollEntryId String
+  reasons     String
+  status      String    @default("HELD") // HELD | ACCEPTED | REJECTED
+  decidedById String?
+  decidedAt   DateTime?
+  note        String    @default("")
+  createdAt   DateTime  @default(now())
+}
+
+model Ballot {
+  id          String    @id // random, never time-ordered
+  electionId  String
+  election    Election  @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  contestId   String
+  contest     Contest   @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  districtId  String?
+  data        String // canonical JSON mark
+  status      String // COUNTED | HELD | REJECTED | SUPERSEDED
+  rollEntryId String? // only for SHOW_OF_HANDS
+  envelopeId  String? // only while HELD
+  revoteTag   String? // only while polls are open and re-voting is allowed
+  receiptHash String
+  seq         Int?
+  prevHash    String?
+  hash        String?
+  createdAt   DateTime? // only for SHOW_OF_HANDS
+
+  @@unique([contestId, receiptHash])
+  @@unique([electionId, seq])
+  @@unique([electionId, prevHash])
+  @@index([electionId, status])
+  @@index([envelopeId])
+  @@index([revoteTag])
+}
+
+// ── Plumbing ────────────────────────────────────────────────────────────────
+
+model IpVerdict {
+  ip        String   @id // hmac of the address
+  verdict   String // JSON IpLookup
+  source    String
+  fetchedAt DateTime
+}
+
+model Upload {
+  id         String       @id @default(cuid())
+  orgId      String
+  org        Organisation @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  storedName String
+  mime       String
+  size       Int
+  sha256     String
+  createdAt  DateTime     @default(now())
+}
+
+model ApiKey {
+  id         String       @id @default(cuid())
+  orgId      String
+  org        Organisation @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  name       String
+  keyHash    String       @unique
+  scope      String // READ | MANAGE
+  lastUsedAt DateTime?
+  createdAt  DateTime     @default(now())
+}
+
+model Webhook {
+  id        String       @id @default(cuid())
+  orgId     String
+  org       Organisation @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  url       String
+  secretEnc String
+  events    String       @default("[]")
+  active    Boolean      @default(true)
+  createdAt DateTime     @default(now())
+}
+
+model Outbox {
+  id        String    @id @default(cuid())
+  orgId     String?
+  channel   String // EMAIL | DISCORD | WEBHOOK
+  kind      String
+  recipient String // e-mail address, webhook id, or "discord"
+  subject   String
+  payload   String
+  status    String    @default("PENDING") // PENDING | SENT | FAILED
+  attempts  Int       @default(0)
+  lastError String    @default("")
+  createdAt DateTime  @default(now())
+  nextTryAt DateTime  @default(now())
+  sentAt    DateTime?
+
+  @@index([status, nextTryAt])
+}
+
+model Setting {
+  key   String @id
+  value String
+}
+
+// Append-only, hash-chained journal of everything that matters.
+model AuditLog {
+  seq        Int      @id @default(autoincrement())
+  at         DateTime @default(now())
+  orgId      String?
+  actorId    String?
+  actorLabel String   @default("system")
+  action     String
+  entity     String   @default("")
+  entityId   String   @default("")
+  details    String   @default("{}")
+  ip         String   @default("")
+  prevHash   String   @unique
+  hash       String
+
+  @@index([orgId, action])
+  @@index([entity, entityId])
+}
+
+model RateBucket {
+  key     String   @id
+  count   Int
+  resetAt DateTime
+}
