@@ -7,7 +7,7 @@ Tick a phase only when its "Done when" list passes and its commit exists. Note a
 - [x] Phase 0 — Bootstrap
 - [x] Phase 1 — Foundations: data, accounts, organisations, i18n
 - [x] Phase 2 — The Booth as a component library
-- [ ] Phase 3 — The office: elections, ballots, register
+- [x] Phase 3 — The office: elections, ballots, register
 - [ ] Phase 4 — Voting core
 - [ ] Phase 5 — Fraud layer
 - [ ] Phase 6 — Counting, results, the remaining ballot types

@@ -269,3 +269,10 @@
   }
   @media (max-height: 700px) { & .paper li { min-height: 52px; } & .box { width: 42px; height: 42px; } & .shelf { top: 17%; } }
 }
+
+/* The office's still preview of a paper: in the page flow, no gestures, no stage. */
+.station.preview { position: relative; inset: auto; overflow: visible; background: transparent; z-index: auto; width: 100%; display: grid; place-items: center;
+  & .sheet { width: min(440px, 100%); transform: rotate(-0.8deg); }
+  & .paper { cursor: default; }
+  & .box, & .score { cursor: default; pointer-events: none; }
+}

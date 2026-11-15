@@ -296,7 +296,8 @@ model RollEntry {
   id              String    @id @default(cuid())
   electionId      String
   election        Election  @relation(fields: [electionId], references: [id], onDelete: Cascade)
-  identityKey     String // "email:<hmac>" | "user:<id>" | "reg:<id>" | "discord:<id>" | "code:<id>"
+  identityKey     String // "email:<hmac>" | "reg:<id>" | "discord:<id>" | "code:<id>"
+  emailKeyHash    String? // hmac of the alias-folded e-mail, to find the line from any route
   route           String // EMAIL_CODE | LINK | ACCOUNT | DISCORD | CODE
   registerEntryId String?
   userId          String?
@@ -319,6 +320,7 @@ model RollEntry {
   @@index([electionId, ipHash])
   @@index([electionId, deviceId])
   @@index([electionId, deviceFp])
+  @@index([electionId, emailKeyHash])
 }
 
 model AccessCode {
@@ -326,6 +328,7 @@ model AccessCode {
   electionId String
   election   Election  @relation(fields: [electionId], references: [id], onDelete: Cascade)
   codeHash   String    @unique
+  codeEnc    String    @default("") // encrypted, for reprinting until polls open
   batch      String
   label      String    @default("")
   districtId String?

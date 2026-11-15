@@ -138,6 +138,20 @@ export function Tabs({ tabs }: { tabs: Array<{ href: string; label: string; exac
   );
 }
 
+/** Index tabs inside a sheet (one election's sections). */
+export function SubTabs({ tabs }: { tabs: Array<{ href: string; label: string }> }) {
+  const pathname = usePathname();
+  return (
+    <nav className="subtabs" aria-label="Election">
+      {tabs.map((t) => (
+        <a key={t.href} href={t.href} aria-current={pathname === t.href || pathname.startsWith(t.href + "/") ? "page" : undefined}>
+          {t.label}
+        </a>
+      ))}
+    </nav>
+  );
+}
+
 /** Refreshes the page whenever the server says the election changed (server-sent events). */
 export function LiveRefresh({ electionId }: { electionId: string }) {
   const router = useRouter();
