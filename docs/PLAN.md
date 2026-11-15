@@ -14,7 +14,7 @@ Tick a phase only when its "Done when" list passes and its commit exists. Note a
 - [x] Phase 7 — Constituencies end to end
 - [x] Phase 8 — Notifications (SMTP + Discord)
 - [x] Phase 9 — Nominations
-- [ ] Phase 10 — Discord role roll
+- [x] Phase 10 — Discord role roll
 - [ ] Phase 11 — Public API, webhooks, UCTV feed
 - [ ] Phase 12 — Hardening and delivery
 - [ ] Phase 13 — Shared sign-in: Parliament vouches
@@ -27,6 +27,8 @@ Tick a phase only when its "Done when" list passes and its commit exists. Note a
 - Phase 4: the fraud module (signals, evaluate, IP lists, e-mail checks, device evidence) was written now because the desk needs it; Phase 5 adds the review tray, the privacy clock and its tests. One-time links and code cards land on the station page (?v= / ?code=) so the voter still passes the door and the desk. Public pages use a "hallway" look (src/app/hallway.css).
 
 - Phase 8: a real SMTP send and a real Discord post were not tested (no credentials in development); the test buttons exist in Settings and the development mailbox (file transport) was used throughout.
+
+- Phase 10: endpoints checked against docs.discord.com (Nov 2026). A live sign-in against a real Discord application was not tested (no test application available); the pure parts (roles, account age, snowflakes) and the desk admission are unit-tested. The device cookie is read on the callback; the browser fingerprint is not collected on this route.
 
 ## Context
 

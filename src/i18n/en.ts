@@ -33,6 +33,8 @@ export const en = {
   "station.blocked.email": "Use your own, permanent e-mail address.",
   "station.blocked.other": "Several voters arrived from this connection. Try again later, or from another one.",
   "station.notOnRoll": "You are not on the roll",
+  "station.discordFailed": "Discord sign-in did not work",
+  "station.tooYoung": "Your Discord account is too new to vote here",
   "station.results": "Results",
   "station.register": "Register",
   "station.sound": "Sound",

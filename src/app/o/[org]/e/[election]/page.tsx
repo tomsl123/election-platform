@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ org: stri
   return { title: e ? `${e.title} · ${org!.shortName}` : "Polling station" };
 }
 
-export default async function StationPage({ params, searchParams }: { params: Promise<{ org: string; election: string }>; searchParams: Promise<{ v?: string; code?: string }> }) {
+export default async function StationPage({ params, searchParams }: { params: Promise<{ org: string; election: string }>; searchParams: Promise<{ v?: string; code?: string; sign?: string }> }) {
   const { org: slug, election } = await params;
   const sp = await searchParams;
   const org = await getOrg(slug);
@@ -43,6 +43,18 @@ export default async function StationPage({ params, searchParams }: { params: Pr
   let sign: SignSpec | null = null;
   if (["NOMINATIONS", "READY"].includes(e.status)) sign = { kind: "notYet", title: t(dict, "station.notYet", { when: e.opensAt ? fmtDateTime(e.opensAt, tz) : "soon" }) };
   else if (e.status !== "OPEN" || (e.closesAt && e.closesAt <= new Date())) sign = { kind: "closed", title: t(dict, "station.closed") };
+  else if (sp.sign) {
+    // Sent back from a sign-in elsewhere (Discord) with the desk's verdict.
+    const SIGNS: Record<string, SignSpec> = {
+      already: { kind: "already", title: t(dict, "station.already") },
+      notOnRoll: { kind: "notOnRoll", title: t(dict, "station.notOnRoll") },
+      blocked: { kind: "blocked", title: t(dict, "station.blocked"), text: t(dict, "station.blocked.other"), red: true },
+      young: { kind: "notOnRoll", title: t(dict, "station.tooYoung") },
+      discord: { kind: "error", title: t(dict, "station.discordFailed") },
+      closed: { kind: "closed", title: t(dict, "station.closed") },
+    };
+    sign = SIGNS[sp.sign] ?? null;
+  }
 
   // A voter who has checked in and still holds a good pass goes straight back into the booth.
   const pass = sign ? null : await currentPass(e.id, (await cookies()).get(passCookie(e.id))?.value);
