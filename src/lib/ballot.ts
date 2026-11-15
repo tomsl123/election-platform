@@ -3,7 +3,8 @@
 import type { Election, Prisma } from "@prisma/client";
 import { db, withWriteLock, type Tx } from "./db";
 import { audit, auditTx } from "./audit";
-import { canonical, normaliseReceipt, randomId, randomReceipt, sha256 } from "./crypto";
+import { canonical, hmac, normaliseReceipt, randomId, randomReceipt, sha256 } from "./crypto";
+import { buildResult, type Result } from "./count";
 import { bump } from "./live";
 import { Problem } from "./problem";
 import { validateMark, type AnyMark } from "./marks";
@@ -143,12 +144,119 @@ export async function closePolls(electionId: string, actor: Actor): Promise<{ co
   return countElection(e.id, actor);
 }
 
-export async function countElection(_electionId: string, _actor: Actor): Promise<{ counted: boolean; message: string }> {
-  return { counted: false, message: "The polls are closed. Counting arrives in Phase 6." };
+export async function countElection(electionId: string, actor: Actor): Promise<{ counted: boolean; message: string }> {
+  const pre = await db.election.findUniqueOrThrow({ where: { id: electionId } });
+  if (pre.status !== "CLOSED") throw new Problem("Only closed polls can be counted.");
+  const { settleEnvelopesForCount } = await import("./envelopes");
+  const { waiting } = await settleEnvelopesForCount(electionId, actor);
+  if (waiting) return { counted: false, message: `The polls are closed. ${waiting} held envelope${waiting === 1 ? "" : "s"} must be decided before the count.` };
+
+  const sealed = await withWriteLock(() =>
+    db.$transaction(
+      async (tx) => {
+        const e = await tx.election.findUniqueOrThrow({ where: { id: electionId }, include: electionInclude });
+        if (e.status !== "CLOSED") throw new Problem("These polls have already been counted.");
+        if (await tx.ballot.count({ where: { electionId, status: "HELD" } })) throw new Problem("Held ballots remain; decide them first.");
+        const hands = e.transparency === "SHOW_OF_HANDS";
+        // Re-votes are no longer possible: the tags that tied them to a voter are wiped.
+        await tx.ballot.updateMany({ where: { electionId, revoteTag: { not: null } }, data: { revoteTag: null } });
+        if (!hands) {
+          // Shuffle the urn: re-insert the counted ballots in an order unrelated to when they were cast, then chain them.
+          const urn = await tx.ballot.findMany({ where: { electionId, status: "COUNTED", seq: null } });
+          urn.sort((a, b) => (a.receiptHash < b.receiptHash ? -1 : 1));
+          await tx.ballot.deleteMany({ where: { id: { in: urn.map((b) => b.id) } } });
+          let prev = (await tx.ballot.findFirst({ where: { electionId, seq: { not: null } }, orderBy: { seq: "desc" } }))?.hash ?? genesis(electionId);
+          let seq = (await tx.ballot.count({ where: { electionId, seq: { not: null } } })) + 1;
+          for (const b of urn) {
+            const link: Link = { electionId, contestId: b.contestId, districtId: b.districtId, seq, data: b.data, voter: null, receiptHash: b.receiptHash };
+            const hash = ballotHash(prev, link);
+            await tx.ballot.create({ data: { id: randomId(), electionId, contestId: b.contestId, districtId: b.districtId, data: b.data, status: "COUNTED", receiptHash: b.receiptHash, seq, prevHash: prev, hash } });
+            prev = hash;
+            seq++;
+          }
+        }
+        const counted = await tx.ballot.findMany({ where: { electionId, status: "COUNTED" }, select: { contestId: true, districtId: true, data: true } });
+        const chainHead = (await tx.ballot.findFirst({ where: { electionId, seq: { not: null } }, orderBy: { seq: "desc" } }))?.hash ?? genesis(electionId);
+        const result = buildResult(e, counted, await districtsOf(tx, e.districtSetId), await turnoutOf(tx, e));
+        const json = canonical(result);
+        const resultHash = sha256(`${json}|${chainHead}`);
+        await tx.election.update({ where: { id: electionId }, data: { status: "COUNTED", countedAt: new Date(), result: json, resultHash, chainHead, seal: hmac("result-seal", resultHash) } });
+        await auditTx(tx, { orgId: e.orgId, actorId: actor.id, actorLabel: actor.label, action: "election.counted", entity: "Election", entityId: e.id, ip: actor.ip, details: { resultHash, ballots: counted.length } });
+        return result;
+      },
+      { timeout: 120_000 },
+    ),
+  );
+  bump(electionId);
+  const { afterCount } = await import("./events");
+  await afterCount(electionId, sealed);
+  return { counted: true, message: "Counted and sealed." };
 }
 
-export async function certifyElection(_electionId: string, _actor: Actor) {
-  throw new Problem("Certification arrives in Phase 6.");
+async function districtsOf(tx: Tx | typeof db, setId: string | null) {
+  return setId ? tx.district.findMany({ where: { setId }, orderBy: { position: "asc" } }) : [];
+}
+
+async function turnoutOf(tx: Tx | typeof db, e: Election) {
+  const voted = await tx.rollEntry.findMany({ where: { electionId: e.id, status: "VOTED" }, select: { districtId: true } });
+  const byDistrict: Record<string, number> = {};
+  for (const v of voted) if (v.districtId) byDistrict[v.districtId] = (byDistrict[v.districtId] ?? 0) + 1;
+  const eligible = e.access === "INVITE" ? Math.max(e.eligibleCount, await tx.rollEntry.count({ where: { electionId: e.id } })) : 0;
+  return { voted: voted.length, eligible, byDistrict };
+}
+
+/** A live tally of what is in the box now (for elections with live results). Not sealed. */
+export async function liveResult(electionId: string): Promise<Result | null> {
+  const e = await db.election.findUnique({ where: { id: electionId }, include: electionInclude });
+  if (!e) return null;
+  const counted = await db.ballot.findMany({ where: { electionId, status: "COUNTED" }, select: { contestId: true, districtId: true, data: true } });
+  return buildResult(e, counted, await districtsOf(db, e.districtSetId), await turnoutOf(db, e));
+}
+
+/** Recomputes the chain and the count from the stored ballots, and checks the seal. */
+export async function verifyElection(electionId: string): Promise<{ ok: boolean; ballots: number; problems: string[] }> {
+  const e = await db.election.findUniqueOrThrow({ where: { id: electionId }, include: electionInclude });
+  const problems: string[] = [];
+  const chained = await db.ballot.findMany({ where: { electionId, seq: { not: null } }, orderBy: { seq: "asc" } });
+  let prev = genesis(electionId);
+  let expected = 1;
+  for (const b of chained) {
+    const link: Link = { electionId, contestId: b.contestId, districtId: b.districtId, seq: b.seq!, data: b.data, voter: b.rollEntryId, receiptHash: b.receiptHash };
+    if (b.seq !== expected) problems.push(`Ballot ${expected} is missing from the chain.`);
+    if (b.prevHash !== prev || b.hash !== ballotHash(prev, link)) {
+      problems.push(`Ballot ${b.seq} does not match its hash; the chain is broken from here.`);
+      break;
+    }
+    prev = b.hash!;
+    expected = b.seq! + 1;
+  }
+  if (["COUNTED", "CERTIFIED"].includes(e.status)) {
+    if (!e.result || !e.resultHash) problems.push("There is no sealed result.");
+    else {
+      if (sha256(`${e.result}|${e.chainHead}`) !== e.resultHash) problems.push("The stored result does not match its hash.");
+      if (e.seal !== hmac("result-seal", e.resultHash)) problems.push("The seal on the result is not valid.");
+      if (problems.length === 0 && e.chainHead !== prev) problems.push("The sealed result refers to a different ballot chain.");
+      const counted = await db.ballot.findMany({ where: { electionId, status: "COUNTED" }, select: { contestId: true, districtId: true, data: true } });
+      const unchained = await db.ballot.count({ where: { electionId, status: "COUNTED", seq: null } });
+      if (unchained) problems.push(`${unchained} counted ballots are outside the chain.`);
+      const stored = JSON.parse(e.result) as Result;
+      const again = buildResult(e, counted, await districtsOf(db, e.districtSetId), stored.turnout);
+      if (canonical(again.contests) !== canonical(stored.contests)) problems.push("Counting the ballots again gives a different result from the sealed one.");
+    }
+  }
+  return { ok: problems.length === 0, ballots: chained.length, problems };
+}
+
+export async function certifyElection(electionId: string, actor: Actor) {
+  const e = await db.election.findUniqueOrThrow({ where: { id: electionId } });
+  if (e.status !== "COUNTED") throw new Problem("Only a counted result can be certified.");
+  const v = await verifyElection(electionId);
+  if (!v.ok) throw new Problem(`The recount found a problem: ${v.problems[0]}`);
+  await db.election.update({ where: { id: e.id }, data: { status: "CERTIFIED", certifiedAt: new Date(), certifiedById: actor.id } });
+  await audit({ orgId: e.orgId, actorId: actor.id, actorLabel: actor.label, action: "election.certified", entity: "Election", entityId: e.id, ip: actor.ip, details: { resultHash: e.resultHash } });
+  bump(e.id);
+  const { afterCertify } = await import("./events");
+  await afterCertify(e.id);
 }
 
 export type { Election };

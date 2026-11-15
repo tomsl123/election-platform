@@ -106,6 +106,7 @@ export const en = {
   "results.seats": "Seats",
   "results.round": "Round {n}",
   "results.recount": "Recount",
+  "results.live": "Live",
   "results.certified": "Certified",
   "results.blank": "Blank",
   "results.national": "All",
