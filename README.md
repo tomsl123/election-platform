@@ -100,6 +100,7 @@ Every gesture has a tap and a keyboard path; motion is reduced when the system a
 | `SETUP_TOKEN` | Required once, on `/setup`. |
 | `BASE_URL` | Public address, for links in e-mail and Discord. |
 | `UPLOAD_DIR` | Where crests and photos are stored. |
+| `IPLIST_DIR` | Where the Tor, VPN and datacenter lists are kept. |
 | `TRUST_PROXY` | `1` behind a TLS-terminating reverse proxy (secure cookies, forwarded client IP). |
 
 Everything else is set in the app.

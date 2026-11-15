@@ -14,7 +14,7 @@ FROM node:24-slim
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/* \
   && mkdir -p /data/uploads && chown -R node:node /data
-ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 DATABASE_URL="file:/data/elections.db" UPLOAD_DIR="/data/uploads" TRUST_PROXY="1"
+ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 DATABASE_URL="file:/data/elections.db" UPLOAD_DIR="/data/uploads" IPLIST_DIR="/data/iplists" MAILBOX_DIR="/data/mailbox" TRUST_PROXY="1"
 COPY --from=build --chown=node:node /app ./
 USER node
 VOLUME /data

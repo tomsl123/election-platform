@@ -10,7 +10,7 @@ export async function deliverMail(smtp: SmtpConfig, mail: Mail): Promise<void> {
 
   if (smtp.transport === "file") {
     // Development mailbox: nothing leaves the machine.
-    const dir = resolve(/*turbopackIgnore: true*/ process.cwd(), "data", "mailbox");
+    const dir = resolve(/*turbopackIgnore: true*/ process.cwd(), process.env.MAILBOX_DIR || "./data/mailbox");
     await mkdir(dir, { recursive: true });
     const name = `${new Date().toISOString().replace(/[:.]/g, "-")}-${mail.to.replace(/[^\w.@-]+/g, "_")}.txt`;
     await writeFile(resolve(dir, name), `To: ${mail.to}\nSubject: ${mail.subject}\n\n${mail.text}\n`);
