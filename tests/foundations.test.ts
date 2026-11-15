@@ -13,7 +13,8 @@ describe("crypto", () => {
   });
   it("refuses a tampered cipher text", () => {
     const sealed = encrypt("x");
-    const broken = sealed.slice(0, -2) + (sealed.endsWith("A") ? "B" : "A") + sealed.slice(-1);
+    const [v, iv, tag, body] = sealed.split(".");
+    const broken = [v, iv, (tag[0] === "A" ? "B" : "A") + tag.slice(1), body].join(".");
     expect(decrypt(broken)).toBeNull();
   });
   it("normalises receipts typed loosely", () => {

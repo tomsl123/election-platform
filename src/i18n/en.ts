@@ -36,7 +36,14 @@ export const en = {
   "station.back": "Notice board",
 
   // ── Desk: identity ──
+  "desk.title": "Register",
   "desk.email": "Your e-mail",
+  "desk.enterLink": "Check in with my invitation",
+  "desk.route.EMAIL_CODE": "E-mail",
+  "desk.route.CODE": "Code card",
+  "desk.route.ACCOUNT": "Account",
+  "desk.route.DISCORD": "Discord",
+  "desk.route.LINK": "Invitation",
   "desk.name": "Name for the register",
   "desk.name.public": "This name will be published.",
   "desk.district": "Your {set}",
@@ -79,6 +86,7 @@ export const en = {
   "board.closes": "Closes {when}",
   "board.closed": "Closed {when}",
   "board.turnout": "{n} voted",
+  "board.nominate": "Nominate",
   "verify.title": "Check a receipt",
   "verify.code": "Receipt code",
   "verify.check": "Check",

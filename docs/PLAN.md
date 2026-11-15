@@ -8,7 +8,7 @@ Tick a phase only when its "Done when" list passes and its commit exists. Note a
 - [x] Phase 1 — Foundations: data, accounts, organisations, i18n
 - [x] Phase 2 — The Booth as a component library
 - [x] Phase 3 — The office: elections, ballots, register
-- [ ] Phase 4 — Voting core
+- [x] Phase 4 — Voting core
 - [ ] Phase 5 — Fraud layer
 - [ ] Phase 6 — Counting, results, the remaining ballot types
 - [ ] Phase 7 — Constituencies end to end
@@ -23,6 +23,8 @@ Tick a phase only when its "Done when" list passes and its commit exists. Note a
 
 - Phase 2: the registration desk (Desk.tsx) is built in Phase 4 together with its real check-in flow; PollingStation already has the desk slot. RankBox and ScoreRow were built in Phase 2 (they share the paper code). The booth casts when the last slip is dropped, not when the last paper is folded.
 - Phase 2: station.css and office.css are scoped (CSS nesting under .station / .office) so the two looks never collide during client-side navigation.
+
+- Phase 4: the fraud module (signals, evaluate, IP lists, e-mail checks, device evidence) was written now because the desk needs it; Phase 5 adds the review tray, the privacy clock and its tests. One-time links and code cards land on the station page (?v= / ?code=) so the voter still passes the door and the desk. Public pages use a "hallway" look (src/app/hallway.css).
 
 ## Context
 

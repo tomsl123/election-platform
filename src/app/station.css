@@ -276,3 +276,64 @@
   & .paper { cursor: default; }
   & .box, & .score { cursor: default; pointer-events: none; }
 }
+
+/* ── the registration desk ── */
+@keyframes st-strike { from { width: 0; } }
+@keyframes st-write { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes st-bell { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(-16deg); } 45% { transform: rotate(13deg); } 70% { transform: rotate(-7deg); } }
+.station {
+  & .desk { position: relative; display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 360px); gap: 28px; align-items: center; justify-content: center; width: min(820px, 94vw); animation: st-deal 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  & .register { display: grid; grid-template-columns: 1fr 1fr; padding: 14px 12px; transform: rotate(-2deg); border-radius: 4px 4px 6px 6px;
+    background: linear-gradient(90deg, #efe6cf 0 48%, #c9bea2 49.5%, #d8ccad 50%, #efe6cf 51.5%); box-shadow: 0 0 0 6px color-mix(in srgb, var(--b-wood, #6d4a2b) 75%, #000), 0 16px 22px rgba(25, 12, 0, 0.5); }
+  & .register .page { padding: 4px 12px; display: grid; gap: 0; align-content: start; }
+  & .register p { position: relative; height: 30px; border-bottom: 1px solid rgba(60, 80, 120, 0.25); font-style: italic; font-size: 15px; line-height: 30px; white-space: nowrap; overflow: hidden; }
+  & .register p span { display: inline-block; }
+  & .register p.done::after { content: ""; position: absolute; left: 0; top: 52%; height: 2px; width: var(--w, 70%); background: rgba(35, 32, 40, 0.75); border-radius: 2px; transform: rotate(-1.5deg); }
+  & .register p.mine { background: rgba(255, 236, 160, 0.45); }
+  & .register p.mine.now span { animation: st-write 0.5s steps(12) both; }
+  & .register p.mine.now::after { animation: st-strike 0.45s 0.55s ease-out both; }
+  & .deskcard { position: relative; padding: 16px 20px 18px; background: var(--b-tint, #f6f1e4); transform: rotate(1deg); box-shadow: 0 14px 18px rgba(25, 12, 0, 0.45); display: grid; gap: 14px;
+    background-image: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.014) 0 1px, transparent 1px 3px); }
+  & .deskcard header { display: flex; align-items: center; gap: 12px; padding-bottom: 10px; border-bottom: 3px double var(--ink); }
+  & .deskcard header .crest { width: 30px; height: 35px; }
+  & .deskcard header b { font-size: 22px; }
+  & .deskcard .tags { display: flex; gap: 8px; }
+  & .deskcard .tags button { width: 46px; height: 38px; border: 0; border-radius: 3px 3px 10px 10px; cursor: pointer; color: #3d2c0b; display: grid; place-items: center;
+    background: linear-gradient(color-mix(in srgb, var(--brass) 55%, #fff), color-mix(in srgb, var(--brass) 85%, #000)); opacity: 0.55; box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3); }
+  & .deskcard .tags button.on { opacity: 1; transform: translateY(2px); }
+  & .deskcard .tags svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+  & .deskcard .line { display: grid; gap: 2px; }
+  & .deskcard .line > span { font: 600 10.5px var(--f-cond); letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.7; }
+  & .deskcard .line small { font-size: 12.5px; font-style: italic; opacity: 0.75; }
+  & .deskcard input { width: 100%; font: inherit; font-size: 18px; color: var(--ink); background: transparent; border: 0; border-bottom: 1.5px solid rgba(35, 32, 28, 0.7); padding: 6px 2px 4px; border-radius: 0; user-select: text; -webkit-user-select: text; }
+  & .deskcard input:focus { outline: none; border-color: #2456a6; box-shadow: 0 2px 0 -0.5px #2456a6; }
+  & .deskcard input.code6 { font: 500 28px var(--f-mono); letter-spacing: 0.62em; padding-left: 12px; border: 0; box-shadow: none; width: 270px; max-width: 100%;
+    background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.6) 0 36px, transparent 36px 44px); outline: 2px solid transparent; }
+  & .deskcard input.code6:focus { outline-color: #2456a6; }
+  & .deskcard input.card { font: 500 22px var(--f-mono); letter-spacing: 0.14em; text-transform: uppercase; }
+  & .deskcard .note { font-style: italic; font-size: 15px; }
+  & .deskcard .err { font-size: 14px; color: #a8261e; font-style: italic; }
+  & .deskcard .tiles { border: 0; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 6px; max-height: 190px; overflow-y: auto; }
+  & .deskcard .tiles legend { font: 600 10.5px var(--f-cond); letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.7; margin-bottom: 6px; padding: 0; }
+  & .deskcard .tiles label { position: relative; display: grid; gap: 1px; padding: 6px 6px 5px; text-align: center; cursor: pointer; border-radius: 3px; background: rgba(255, 255, 255, 0.5); box-shadow: inset 0 0 0 1px rgba(35, 32, 28, 0.3); }
+  & .deskcard .tiles label.on { box-shadow: inset 0 0 0 2.5px var(--ink); background: #fff8e2; }
+  & .deskcard .tiles input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+  & .deskcard .tiles b { font: 600 13px var(--f-cond); letter-spacing: 0.1em; }
+  & .deskcard .tiles span { font-size: 10.5px; line-height: 1.1; opacity: 0.75; }
+  & .deskcard .tiles label:has(input:focus-visible) { outline: 3px solid #2456a6; }
+  & .deskcard .go, & .deskcard .bell { justify-self: start; display: inline-flex; align-items: center; gap: 10px; min-height: 46px; padding: 0 18px; border: 0; border-radius: 4px; cursor: pointer; text-decoration: none;
+    font: 600 13px var(--f-cond); letter-spacing: 0.16em; text-transform: uppercase; color: #f0d691;
+    background: linear-gradient(color-mix(in srgb, var(--b-box, #1f3b2b) 70%, #fff), var(--b-box, #1f3b2b)); box-shadow: 0 2px 0 #0b1a11, 0 5px 8px rgba(0, 0, 0, 0.3); }
+  & .deskcard .go:disabled, & .deskcard .bell:disabled { opacity: 0.55; cursor: progress; }
+  & .deskcard .go.discord { background: linear-gradient(#7984f5, #5865f2); color: #fff; box-shadow: 0 2px 0 #3c45a5; }
+  & .deskcard .bell { color: #3d2c0b; background: linear-gradient(color-mix(in srgb, var(--brass) 55%, #fff), color-mix(in srgb, var(--brass) 88%, #000)); box-shadow: 0 2px 0 #6e5210, 0 5px 8px rgba(0, 0, 0, 0.3); }
+  & .deskcard .bell svg { width: 26px; height: 26px; fill: currentColor; stroke: currentColor; stroke-width: 1.6; transform-origin: 50% 10%; }
+  & .deskcard .bell.ring svg { animation: st-bell 0.8s ease-in-out; }
+  & .deskcard .link { justify-self: start; border: 0; background: none; padding: 0; cursor: pointer; font-size: 14px; text-decoration: underline; color: var(--ink); opacity: 0.75; }
+  & .deskcard .admitted { display: grid; place-items: center; min-height: 120px; }
+  & .deskcard .admitted svg { width: 80px; fill: none; stroke: #2f6b3a; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 80; stroke-dashoffset: 80; animation: st-draw 0.5s 0.4s ease-out forwards; }
+  @media (max-width: 760px) {
+    & .desk { grid-template-columns: 1fr; gap: 0; }
+    & .register { display: none; }
+  }
+}

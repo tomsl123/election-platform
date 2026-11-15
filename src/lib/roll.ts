@@ -130,7 +130,8 @@ const CODE_ALPHABET = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
 export function normaliseCode(raw: string): string {
   return raw.toUpperCase().replace(/[^0-9A-Z]/g, "").replace(/O/g, "0").replace(/[IL]/g, "1");
 }
-export const codeHash = (electionId: string, raw: string) => sha256(`code:${electionId}:${normaliseCode(raw)}`);
+// Codes are unique across all elections, so a bare code (from a card or QR) finds its own election.
+export const codeHash = (raw: string) => sha256(`code:${normaliseCode(raw)}`);
 
 export async function generateCodes(org: Organisation, e: Election, actor: Actor, count: number, districtId: string | null, label: string) {
   assertEditable(e);
@@ -140,7 +141,8 @@ export async function generateCodes(org: Organisation, e: Election, actor: Actor
     let raw = "";
     for (let k = 0; k < 8; k++) raw += CODE_ALPHABET[randomInt(CODE_ALPHABET.length)];
     const pretty = `${raw.slice(0, 4)}-${raw.slice(4)}`;
-    await db.accessCode.create({ data: { electionId: e.id, codeHash: codeHash(e.id, pretty), codeEnc: encrypt(pretty), batch, label: label.slice(0, 60), districtId } });
+    if (await db.accessCode.findUnique({ where: { codeHash: codeHash(pretty) } })) { i--; continue; }
+    await db.accessCode.create({ data: { electionId: e.id, codeHash: codeHash(pretty), codeEnc: encrypt(pretty), batch, label: label.slice(0, 60), districtId } });
   }
   await audit({ orgId: org.id, actorId: actor.id, actorLabel: actor.label, action: "codes.generated", entity: "Election", entityId: e.id, ip: actor.ip, details: { count, districtId, batch } });
   return batch;

@@ -38,7 +38,7 @@ export type StationProps = {
   /** Shown instead of the door: polls closed, not yet open, already voted, ... */
   sign?: SignSpec | null;
   /** The registration desk. Calls admit() once the voter is checked in. Without it the booth opens straight away. */
-  desk?: (admit: (a: Admission) => void) => ReactNode;
+  desk?: (admit: (a: Admission) => void, showSign: (s: SignSpec) => void) => ReactNode;
   /** Skip the door: the voter came back from a check-in that happened elsewhere. */
   startInside?: boolean;
   cast: (marks: CastMark[]) => Promise<CastResult>;
@@ -170,7 +170,7 @@ export function PollingStation(p: StationProps) {
         <div className="shelf" ref={shelfRef}>
           {scene !== "hall" ? <Pile tints={remaining} /> : null}
           <div className="spot">
-            {scene === "desk" && p.desk ? p.desk(admit) : null}
+            {scene === "desk" && p.desk ? p.desk(admit, setSign) : null}
             {scene === "booth" && current ? (
               <BallotPaper
                 key={current.id}
