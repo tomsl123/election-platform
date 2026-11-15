@@ -25,6 +25,23 @@ export function startClock() {
     },
   });
   registerJob({
+    name: "reminders",
+    run: async (now) => {
+      const { noticeClosingSoon, noticeHeldDigest } = await import("./notices");
+      const { parseNotices } = await import("./types");
+      const open = await db.election.findMany({ where: { status: "OPEN", reminderSentAt: null, closesAt: { gt: now } } });
+      for (const e of open) {
+        const n = parseNotices(e.notices);
+        if (!n.closingSoon || !n.closingSoonMinutes || e.closesAt!.getTime() - now.getTime() > n.closingSoonMinutes * 60_000) continue;
+        await db.election.update({ where: { id: e.id }, data: { reminderSentAt: now } });
+        // Too close to the opening for a reminder to be useful.
+        if (e.openedAt && now.getTime() - e.openedAt.getTime() < 5 * 60_000) continue;
+        await noticeClosingSoon(e.id);
+      }
+      await noticeHeldDigest(now);
+    },
+  });
+  registerJob({
     name: "privacy",
     run: async (now) => {
       // Thirty days after certification, the evidence gathered at the desk is wiped from the roll.

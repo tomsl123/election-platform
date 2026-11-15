@@ -12,7 +12,7 @@ Tick a phase only when its "Done when" list passes and its commit exists. Note a
 - [x] Phase 5 — Fraud layer
 - [x] Phase 6 — Counting, results, the remaining ballot types
 - [x] Phase 7 — Constituencies end to end
-- [ ] Phase 8 — Notifications (SMTP + Discord)
+- [x] Phase 8 — Notifications (SMTP + Discord)
 - [ ] Phase 9 — Nominations
 - [ ] Phase 10 — Discord role roll
 - [ ] Phase 11 — Public API, webhooks, UCTV feed
@@ -25,6 +25,8 @@ Tick a phase only when its "Done when" list passes and its commit exists. Note a
 - Phase 2: station.css and office.css are scoped (CSS nesting under .station / .office) so the two looks never collide during client-side navigation.
 
 - Phase 4: the fraud module (signals, evaluate, IP lists, e-mail checks, device evidence) was written now because the desk needs it; Phase 5 adds the review tray, the privacy clock and its tests. One-time links and code cards land on the station page (?v= / ?code=) so the voter still passes the door and the desk. Public pages use a "hallway" look (src/app/hallway.css).
+
+- Phase 8: a real SMTP send and a real Discord post were not tested (no credentials in development); the test buttons exist in Settings and the development mailbox (file transport) was used throughout.
 
 ## Context
 

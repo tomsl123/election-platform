@@ -377,6 +377,8 @@ export async function scheduleElection(org: Organisation, id: string, actor: Act
   if (problems.length) throw new ElectionError(problems[0]);
   if (!e.opensAt) throw new ElectionError("Set an opening time, or open the polls by hand.");
   await setStatus(e, "READY", actor, "election.scheduled");
+  const { afterScheduled } = await import("./events");
+  await afterScheduled(e.id);
 }
 
 export async function unscheduleElection(org: Organisation, id: string, actor: Actor) {
