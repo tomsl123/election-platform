@@ -13,7 +13,8 @@ services:
       SETUP_TOKEN: ${SETUP_TOKEN:?set SETUP_TOKEN}
       # The public address, used in e-mail and Discord links, e.g. https://elections.example.org
       BASE_URL: ${BASE_URL:?set BASE_URL}
-      # 1 behind a TLS-terminating proxy: secure cookies and the real client address.
+      # How many proxies stand in front: 1 = Coolify's Traefik only, 2 = another proxy in front of Traefik.
+      # Secure cookies, and which X-Forwarded-For entry is the voter.
       TRUST_PROXY: ${TRUST_PROXY:-1}
     volumes:
       # The SQLite database and the uploaded images. Back this up.

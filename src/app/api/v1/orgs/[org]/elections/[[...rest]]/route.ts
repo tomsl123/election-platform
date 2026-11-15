@@ -1,6 +1,7 @@
 // The public API, version 1. Anonymous callers see what the public pages show; a read key also
 // sees drafts; a manage key may open and close polls. Docs: /api/docs, spec: /api/openapi.json.
 import { db } from "@/lib/db";
+import { clientIp, proxyHops } from "@/lib/auth";
 import { sha256 } from "@/lib/crypto";
 import { visibleResult } from "@/lib/results";
 import { subscribe } from "@/lib/live";
@@ -41,7 +42,7 @@ export async function GET(req: Request, { params }: Params) {
   const who = await caller(req, org.id);
   if (who === "BAD") return fail(401, "Unknown API key");
   if (who === "ANON") {
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
+    const ip = clientIp(req.headers.get("x-forwarded-for") ?? "", proxyHops()) || "local";
     if (!(await hit(`api:${ip}`, 300, 60)).ok) return fail(429, "Slow down");
   }
   const [electionSlug, sub] = rest;

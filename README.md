@@ -101,7 +101,7 @@ Every gesture has a tap and a keyboard path; motion is reduced when the system a
 | `BASE_URL` | Public address, for links in e-mail and Discord. |
 | `UPLOAD_DIR` | Where crests and photos are stored. |
 | `IPLIST_DIR` | Where the Tor, VPN and datacenter lists are kept. |
-| `TRUST_PROXY` | `1` behind a TLS-terminating reverse proxy (secure cookies, forwarded client IP). |
+| `TRUST_PROXY` | How many reverse proxies stand in front of the app: `0` none, `1` Coolify's Traefik alone, `2` another proxy (such as Nginx Proxy Manager) in front of Traefik. Sets secure cookies and tells the app which forwarded address is the voter's; too high a number lets voters choose their own address. |
 
 Everything else is set in the app.
 
@@ -111,7 +111,7 @@ Everything else is set in the app.
 
 1. Add the repository as a resource with the **Docker Compose** build pack (`/docker-compose.yml`).
 2. Give the `polling-station` service its domain (port 3220).
-3. Set `APP_SECRET`, `SETUP_TOKEN` and `BASE_URL`. `TRUST_PROXY` defaults to `1`.
+3. Set `APP_SECRET`, `SETUP_TOKEN` and `BASE_URL`. `TRUST_PROXY` defaults to `1` (Traefik only); set `2` when another proxy terminates TLS in front of Coolify.
 4. Deploy. Migrations run when the container starts; the health check is `/api/health`.
 5. Open the site: it lands on **/setup**.
 

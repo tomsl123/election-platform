@@ -56,3 +56,19 @@ describe("dictionary and JSON settings", () => {
     expect(parsePolicy("{}", "INVITE").actions.VPN).toBe("IGNORE");
   });
 });
+
+describe("client address behind proxies", () => {
+  it("takes the address the outermost trusted proxy saw, never what the client wrote", async () => {
+    const { clientIp } = await import("@/lib/auth");
+    // NPM appends the client, Traefik appends NPM: the client is 2nd from the right.
+    expect(clientIp("6.6.6.6, 203.0.113.9, 10.99.99.3", 2)).toBe("203.0.113.9");
+    expect(clientIp("203.0.113.9, 10.99.99.3", 2)).toBe("203.0.113.9");
+    // One proxy: the last entry.
+    expect(clientIp("6.6.6.6, 203.0.113.9", 1)).toBe("203.0.113.9");
+    // Fewer entries than proxies: the left-most is the best there is.
+    expect(clientIp("203.0.113.9", 2)).toBe("203.0.113.9");
+    // No proxy: Next.js fills the header from the socket when it is absent.
+    expect(clientIp("198.51.100.4", 0)).toBe("198.51.100.4");
+    expect(clientIp("", 2)).toBe("");
+  });
+});

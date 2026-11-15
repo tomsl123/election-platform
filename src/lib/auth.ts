@@ -19,14 +19,30 @@ const userInclude = { memberships: { include: { org: true } } } satisfies Prisma
 export type AuthUser = Prisma.UserGetPayload<{ include: typeof userInclude }>;
 export type Auth = { user: AuthUser; sessionId: string };
 
+/** TRUST_PROXY: how many reverse proxies stand in front of the app (0 = none). */
+export function proxyHops(): number {
+  const n = Number.parseInt(process.env.TRUST_PROXY ?? "0", 10);
+  return Number.isFinite(n) && n > 0 ? Math.min(n, 10) : 0;
+}
+
 export function secureCookies(): boolean {
-  return process.env.TRUST_PROXY === "1" || (process.env.BASE_URL ?? "").startsWith("https://");
+  return proxyHops() > 0 || (process.env.BASE_URL ?? "").startsWith("https://");
+}
+
+/**
+ * The client's address from X-Forwarded-For. Each proxy appends the address it received the request from,
+ * so behind N proxies the client is the N-th entry from the right; anything left of it was sent by the
+ * client itself and cannot be trusted (a voter could otherwise pick their own address).
+ */
+export function clientIp(forwardedFor: string, hops: number): string {
+  const list = forwardedFor.split(",").map((s) => s.trim()).filter(Boolean);
+  if (!list.length) return "";
+  return (hops > 0 ? list[list.length - hops] : undefined) ?? list[hops > 0 ? 0 : list.length - 1];
 }
 
 export async function requestMeta(): Promise<{ ip: string; userAgent: string }> {
   const h = await headers();
-  const forwarded = (h.get("x-forwarded-for") ?? "").split(",").map((s) => s.trim()).filter(Boolean);
-  let ip = (process.env.TRUST_PROXY === "1" ? forwarded[0] : forwarded[forwarded.length - 1]) ?? "";
+  let ip = clientIp(h.get("x-forwarded-for") ?? "", proxyHops());
   // Development only: lets the fraud checks be exercised with a chosen address.
   if (process.env.NODE_ENV !== "production") ip = h.get("x-ps-test-ip") || ip || "127.0.0.1";
   return { ip, userAgent: (h.get("user-agent") ?? "").slice(0, 200) };
