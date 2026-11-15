@@ -144,6 +144,7 @@ export default async function PapersPage({ params }: { params: Promise<{ org: st
     db.party.findMany({ where: { orgId: org.id }, orderBy: { position: "asc" } }),
     e.districtSetId ? db.district.findMany({ where: { setId: e.districtSetId }, orderBy: { position: "asc" } }) : Promise.resolve([]),
   ]);
+  const signatures = new Map((await db.nominationSupport.groupBy({ by: ["optionId"], where: { option: { contest: { electionId: e.id } } }, _count: true })).map((g) => [g.optionId, g._count]));
   const brand = orgBrand(org);
   const dict = getDict(org, brand.words);
   const editable = isEditable(e) && atLeast(role, "OFFICER");
@@ -247,7 +248,9 @@ export default async function PapersPage({ params }: { params: Promise<{ org: st
                       {o.status === "PENDING" && editable ? (
                         <form action={optionAction} className="row" style={{ marginBottom: 12 }}>
                           <Hidden ctx={ctx} extra={{ contest: c.id, option: o.id }} />
-                          <span className="muted small">Nominated by {o.nominatedByEmail ?? "someone"}</span>
+                          <span className="muted small">
+                            Nominated by {o.nominatedByEmail ?? "someone"} · {signatures.get(o.id) ?? 0} of {parseRule(c.rule).supportersRequired} signatures
+                          </span>
                           <Submit className="btn sm primary" name="op" value="approve">
                             Approve
                           </Submit>

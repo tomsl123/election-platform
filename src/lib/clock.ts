@@ -10,6 +10,8 @@ export function startClock() {
     run: async (now) => {
       const { openElection } = await import("./elections");
       const { closePolls } = await import("./ballot");
+      const { nominationClock } = await import("./nominations");
+      await nominationClock(now);
       const toOpen = await db.election.findMany({ where: { status: "READY", opensAt: { lte: now } } });
       for (const e of toOpen) {
         try {

@@ -62,6 +62,16 @@ export default async function RunPage({ params }: { params: Promise<{ org: strin
           {officer ? (
             <form action={runAction} className="row" style={{ marginTop: 16 }}>
               {hidden}
+              {e.status === "DRAFT" ? (
+                <Submit className="btn ghost" name="op" value="nominationsOpen">
+                  Open nominations
+                </Submit>
+              ) : null}
+              {e.status === "NOMINATIONS" ? (
+                <Submit className="btn" name="op" value="nominationsClose">
+                  Close nominations
+                </Submit>
+              ) : null}
               {isEditable(e) ? (
                 <>
                   {e.status === "READY" ? (

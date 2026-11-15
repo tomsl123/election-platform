@@ -205,8 +205,11 @@ export async function optionAction(fd: FormData) {
     else if (op === "save") await updateOption(org, optionId, actor, await optionInput(fd, org.id));
     else if (op === "remove") await removeOption(org, optionId, actor);
     else if (op === "up" || op === "down") await moveOption(org, optionId, op === "up" ? -1 : 1);
-    else if (op === "approve") await setOptionStatus(org, optionId, actor, "APPROVED");
-    else if (op === "reject") await setOptionStatus(org, optionId, actor, "REJECTED");
+    else if (op === "approve" || op === "reject") {
+      await setOptionStatus(org, optionId, actor, op === "approve" ? "APPROVED" : "REJECTED");
+      const { tellNominee } = await import("@/lib/nominations");
+      await tellNominee(org, optionId, op === "approve");
+    }
   } catch (err) {
     go(back, "err", explain(err));
   }
@@ -278,6 +281,14 @@ export async function runAction(fd: FormData) {
       const { certifyElection } = await import("@/lib/ballot");
       await certifyElection(id, actor);
       msg = "Certified.";
+    } else if (op === "nominationsOpen") {
+      const { openNominations } = await import("@/lib/nominations");
+      await openNominations(org, id, actor);
+      msg = "Nominations are open.";
+    } else if (op === "nominationsClose") {
+      const { closeNominations } = await import("@/lib/nominations");
+      await closeNominations(id, actor);
+      msg = "Nominations are closed.";
     } else if (op === "cancel") {
       await cancelElection(org, id, actor);
       msg = "The election is cancelled.";

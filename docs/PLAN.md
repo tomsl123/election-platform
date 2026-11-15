@@ -13,7 +13,7 @@ Tick a phase only when its "Done when" list passes and its commit exists. Note a
 - [x] Phase 6 — Counting, results, the remaining ballot types
 - [x] Phase 7 — Constituencies end to end
 - [x] Phase 8 — Notifications (SMTP + Discord)
-- [ ] Phase 9 — Nominations
+- [x] Phase 9 — Nominations
 - [ ] Phase 10 — Discord role roll
 - [ ] Phase 11 — Public API, webhooks, UCTV feed
 - [ ] Phase 12 — Hardening and delivery
