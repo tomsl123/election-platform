@@ -103,7 +103,7 @@ export default async function RunPage({ params }: { params: Promise<{ org: strin
                   Certify the result
                 </ConfirmSubmit>
               ) : null}
-              {["COUNTED", "CERTIFIED"].includes(e.status) && orgUctv(org).enabled && e.uctvElectionId !== undefined ? (
+              {["COUNTED", "CERTIFIED"].includes(e.status) && orgUctv(org).enabled && e.uctvElectionId ? (
                 <Submit className="btn" name="op" value="uctv">
                   Send to UCTV
                 </Submit>
@@ -116,6 +116,20 @@ export default async function RunPage({ params }: { params: Promise<{ org: strin
             </form>
           ) : null}
         </Sheet>
+        {orgUctv(org).enabled && officer ? (
+          <Sheet title={<h2>UCTV</h2>} lede="The UCTV election that shows this one on election night.">
+            <form action={runAction} className="row">
+              {hidden}
+              <label className="field" style={{ flex: 1 }}>
+                <span>UCTV election id</span>
+                <input name="uctvElectionId" defaultValue={e.uctvElectionId ?? ""} />
+              </label>
+              <Submit className="btn sm" name="op" value="uctvId">
+                Save
+              </Submit>
+            </form>
+          </Sheet>
+        ) : null}
         <Sheet title={<h2>Turnout</h2>}>
           <table className="ledger">
             <tbody>

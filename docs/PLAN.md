@@ -15,7 +15,7 @@ Tick a phase only when its "Done when" list passes and its commit exists. Note a
 - [x] Phase 8 — Notifications (SMTP + Discord)
 - [x] Phase 9 — Nominations
 - [x] Phase 10 — Discord role roll
-- [ ] Phase 11 — Public API, webhooks, UCTV feed
+- [x] Phase 11 — Public API, webhooks, UCTV feed
 - [ ] Phase 12 — Hardening and delivery
 - [ ] Phase 13 — Shared sign-in: Parliament vouches
 
@@ -29,6 +29,8 @@ Tick a phase only when its "Done when" list passes and its commit exists. Note a
 - Phase 8: a real SMTP send and a real Discord post were not tested (no credentials in development); the test buttons exist in Settings and the development mailbox (file transport) was used throughout.
 
 - Phase 10: endpoints checked against docs.discord.com (Nov 2026). A live sign-in against a real Discord application was not tested (no test application available); the pure parts (roles, account age, snowflakes) and the desk admission are unit-tested. The device cookie is read on the callback; the browser fingerprint is not collected on this route.
+
+- Phase 11: the API docs page is drawn in the office look instead of Swagger UI (the CSP forbids third-party scripts). The UCTV conversion is unit-tested, but sending to a running UCTV instance was not tested (it would write into that project's data). Sending keeps UCTV's existing counties and map, and asks UCTV to draw a map only for an empty UCTV election.
 
 ## Context
 

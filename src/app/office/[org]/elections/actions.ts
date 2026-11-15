@@ -292,6 +292,9 @@ export async function runAction(fd: FormData) {
     } else if (op === "cancel") {
       await cancelElection(org, id, actor);
       msg = "The election is cancelled.";
+    } else if (op === "uctvId") {
+      await db.election.updateMany({ where: { id, orgId: org.id }, data: { uctvElectionId: str(fd, "uctvElectionId", 80) || null } });
+      msg = "UCTV election id saved.";
     } else if (op === "uctv") {
       const { sendToUctv } = await import("@/lib/uctv");
       msg = await sendToUctv(id);
