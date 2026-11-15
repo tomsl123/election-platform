@@ -16,7 +16,7 @@ Tick a phase only when its "Done when" list passes and its commit exists. Note a
 - [x] Phase 9 — Nominations
 - [x] Phase 10 — Discord role roll
 - [x] Phase 11 — Public API, webhooks, UCTV feed
-- [ ] Phase 12 — Hardening and delivery
+- [x] Phase 12 — Hardening and delivery
 - [ ] Phase 13 — Shared sign-in: Parliament vouches
 
 ## Deviations
@@ -31,6 +31,7 @@ Tick a phase only when its "Done when" list passes and its commit exists. Note a
 - Phase 10: endpoints checked against docs.discord.com (Nov 2026). A live sign-in against a real Discord application was not tested (no test application available); the pure parts (roles, account age, snowflakes) and the desk admission are unit-tested. The device cookie is read on the callback; the browser fingerprint is not collected on this route.
 
 - Phase 11: the API docs page is drawn in the office look instead of Swagger UI (the CSP forbids third-party scripts). The UCTV conversion is unit-tested, but sending to a running UCTV instance was not tested (it would write into that project's data). Sending keeps UCTV's existing counties and map, and asks UCTV to draw a map only for an empty UCTV election.
+- Phase 12: the Docker image was not built or run (Docker Desktop's engine was not running on this machine); `npm run build` (the same build the Dockerfile runs) passes. The security pass found and fixed one gap: the polling-day actions did not check that the election belonged to the office's organisation. Each station scene now announces itself through an `aria-live` line.
 
 ## Context
 

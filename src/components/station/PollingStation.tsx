@@ -164,6 +164,9 @@ export function PollingStation(p: StationProps) {
 
   return (
     <main className={`station ${open ? "open" : ""}`} style={p.style}>
+      <p className="sr-only" aria-live="polite">
+        {scene === "desk" ? t("desk.title") : scene === "booth" && current ? `${current.title}, ${idx + 1} / ${contests.length}. ${step === 1 ? t("station.foldIt") : t("station.step.mark")}` : scene === "hall" ? (receipt ? t("station.receipt.keep") : t("station.step.cast")) : ""}
+      </p>
       <section className={`booth ${boothAway ? "away" : ""}`} aria-hidden={scene === "hall"}>
         {scene === "booth" || scene === "door" ? <StepNotice step={step} /> : null}
         <Motes />

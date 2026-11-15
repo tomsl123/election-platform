@@ -257,6 +257,8 @@ export async function rollAction(fd: FormData) {
 export async function runAction(fd: FormData) {
   const { org, actor, slug, id } = await officer(fd);
   const back = base(slug, id, "run");
+  // The election must belong to the organisation whose office this is.
+  if (!(await db.election.findFirst({ where: { id, orgId: org.id }, select: { id: true } }))) go(`/office/${slug}/elections`, "err", "That election is not in this office.");
   const op = str(fd, "op");
   let msg = "Done.";
   try {
