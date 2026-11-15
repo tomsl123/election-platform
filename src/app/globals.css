@@ -1,0 +1,21 @@
+/* Base tokens shared by the station (the booth) and the office (organiser side). */
+:root {
+  --f-serif: var(--font-caslon), Georgia, serif;
+  --f-cond: var(--font-cond), "Arial Narrow", sans-serif;
+  --f-mono: var(--font-mono), ui-monospace, monospace;
+  --ink: #23201c;
+  --paper: #f6f1e4;
+  --wood: #6d4a2b;
+  --wood-dark: #4b311a;
+  --brass: #c9a14a;
+  --curtain: #2d5a3e;
+  --red: #a8261e;
+  --green: #2f6b3a;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { min-height: 100vh; font-family: var(--f-serif); color: var(--ink); background: #140d07; }
+:focus-visible { outline: 3px solid #2456a6; outline-offset: 3px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01s !important; transition-duration: .01s !important; } }

@@ -1,0 +1,25 @@
+# Polling Station for Coolify (Docker Compose build pack) or any host with a reverse proxy in front.
+# No host port is published: the proxy reaches the container on port 3220.
+# To run it on your own machine:  docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
+services:
+  polling-station:
+    build: .
+    restart: unless-stopped
+    expose:
+      - "3220"
+    environment:
+      # Generate both with: node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
+      APP_SECRET: ${APP_SECRET:?set APP_SECRET}
+      SETUP_TOKEN: ${SETUP_TOKEN:?set SETUP_TOKEN}
+      # The public address, used in e-mail and Discord links, e.g. https://elections.example.org
+      BASE_URL: ${BASE_URL:?set BASE_URL}
+      # 1 behind a TLS-terminating proxy: secure cookies and the real client address.
+      TRUST_PROXY: ${TRUST_PROXY:-1}
+    volumes:
+      # The SQLite database and the uploaded images. Back this up.
+      - polling-station-data:/data
+    # One instance only: it owns the clock and the SQLite file.
+    stop_grace_period: 15s
+
+volumes:
+  polling-station-data:

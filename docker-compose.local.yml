@@ -1,0 +1,8 @@
+# Local run without a proxy: publishes the port and turns off secure cookies.
+services:
+  polling-station:
+    ports:
+      - "3220:3220"
+    environment:
+      BASE_URL: ${BASE_URL:-http://localhost:3220}
+      TRUST_PROXY: "0"
