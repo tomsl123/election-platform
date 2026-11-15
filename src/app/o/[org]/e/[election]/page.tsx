@@ -10,6 +10,7 @@ import { brandStyle } from "@/lib/brand";
 import { getDict, t } from "@/i18n";
 import { fmtDateTime } from "@/lib/format";
 import { parseRoutes } from "@/lib/types";
+import { getSettings } from "@/lib/settings";
 import type { SignSpec } from "@/components/station/PollingStation";
 import { StationClient } from "./StationClient";
 
@@ -61,6 +62,7 @@ export default async function StationPage({ params, searchParams }: { params: Pr
   const contests = stationContests(e.contests, pass?.line.districtId ?? null);
   const routes = parseRoutes(e.routes);
   const auth = routes.includes("ACCOUNT") ? await getAuth() : null;
+  const platform = await getSettings();
   let districts = null;
   if (e.districtAssign === "SELF" && e.districtSetId) {
     const set = await db.districtSet.findUnique({ where: { id: e.districtSetId }, include: { districts: { orderBy: { position: "asc" } } } });
@@ -97,6 +99,7 @@ export default async function StationPage({ params, searchParams }: { params: Pr
                 districts,
                 account: auth ? { name: auth.user.displayName } : null,
                 loginHref: `/login?next=${encodeURIComponent(base)}`,
+                sso: !auth && routes.includes("ACCOUNT") && platform.sso.enabled && platform.sso.parliamentUrl ? { href: `/sso/parliament/start?next=${encodeURIComponent(base)}`, label: platform.sso.label } : null,
                 discordHref: routes.includes("DISCORD") ? `/api/discord/start?e=${e.id}` : null,
                 prefill: { code: sp.code?.slice(0, 20), link: sp.v?.slice(0, 100) },
               }

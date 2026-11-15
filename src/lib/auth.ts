@@ -114,16 +114,21 @@ export async function attemptLogin(emailRaw: string, password: string, next: str
   }
   await clearHits(`login:${meta.ip}:${email}`);
   if (user.totpEnabled) {
-    const ticket = randomToken(32);
-    await db.token.deleteMany({ where: { purpose: "SIGNIN", userId: user.id } });
-    await db.token.create({
-      data: { purpose: "SIGNIN", tokenHash: sha256(ticket), userId: user.id, payload: JSON.stringify({ next }), expiresAt: new Date(Date.now() + SIGNIN_MINUTES * 60_000) },
-    });
-    (await cookies()).set(SIGNIN_COOKIE, ticket, { httpOnly: true, sameSite: "lax", secure: secureCookies(), path: "/login", maxAge: SIGNIN_MINUTES * 60 });
+    await startCodeStep(user.id, next);
     return { ok: "code" };
   }
   await finishLogin(user, meta.ip);
   return { ok: true };
+}
+
+/** The password (or Parliament) has spoken for this account; the authenticator code is asked next on /login/code. */
+export async function startCodeStep(userId: string, next: string) {
+  const ticket = randomToken(32);
+  await db.token.deleteMany({ where: { purpose: "SIGNIN", userId } });
+  await db.token.create({
+    data: { purpose: "SIGNIN", tokenHash: sha256(ticket), userId, payload: JSON.stringify({ next }), expiresAt: new Date(Date.now() + SIGNIN_MINUTES * 60_000) },
+  });
+  (await cookies()).set(SIGNIN_COOKIE, ticket, { httpOnly: true, sameSite: "lax", secure: secureCookies(), path: "/login", maxAge: SIGNIN_MINUTES * 60 });
 }
 
 export async function finishLogin(user: { id: string; displayName: string }, ip: string) {

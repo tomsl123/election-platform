@@ -4,14 +4,30 @@
     {
       "name": "design-studies",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["design/serve.mjs"],
+      "runtimeArgs": [
+        "design/serve.mjs"
+      ],
       "port": 4310
     },
     {
       "name": "app",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 3220
+    },
+    {
+      "name": "parliament",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "../voting-system",
+        "run",
+        "dev"
+      ],
+      "port": 3210
     }
   ]
 }

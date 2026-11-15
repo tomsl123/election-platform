@@ -1,4 +1,4 @@
-import { getSettings } from "@/lib/settings";
+import { absoluteUrl, getSettings } from "@/lib/settings";
 import { Check, Field, Sheet } from "@/components/office/ui";
 import { Submit } from "@/components/office/client";
 import { SmtpForm } from "@/components/office/SmtpForm";
@@ -96,6 +96,9 @@ export default async function PlatformSettingsPage() {
               <input name="secret" type="password" autoComplete="off" />
             </Field>
           </div>
+          <p className="small">
+            Return address to enter in Parliament: <code>{absoluteUrl(s, "/api/sso/parliament/callback")}</code>
+          </p>
           <div className="row end">
             <Submit>Save</Submit>
           </div>

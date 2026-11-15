@@ -17,7 +17,7 @@ Tick a phase only when its "Done when" list passes and its commit exists. Note a
 - [x] Phase 10 — Discord role roll
 - [x] Phase 11 — Public API, webhooks, UCTV feed
 - [x] Phase 12 — Hardening and delivery
-- [ ] Phase 13 — Shared sign-in: Parliament vouches
+- [x] Phase 13 — Shared sign-in: Parliament vouches
 
 ## Deviations
 
@@ -32,6 +32,7 @@ Tick a phase only when its "Done when" list passes and its commit exists. Note a
 
 - Phase 11: the API docs page is drawn in the office look instead of Swagger UI (the CSP forbids third-party scripts). The UCTV conversion is unit-tested, but sending to a running UCTV instance was not tested (it would write into that project's data). Sending keeps UCTV's existing counties and map, and asks UCTV to draw a map only for an empty UCTV election.
 - Phase 12: the Docker image was not built or run (Docker Desktop's engine was not running on this machine); `npm run build` (the same build the Dockerfile runs) passes. The security pass found and fixed one gap: the polling-day actions did not check that the election belonged to the office's organisation. Each station scene now announces itself through an `aria-live` line.
+- Phase 13: Parliament's `requireAuth` gained an optional return path so the authorize page can send a member through sign-in and back. An account with two-step sign-in still asks for its authenticator code after Parliament vouches. Tickets may live at most 120 seconds and be at most 30 seconds ahead of our clock. Tested end to end with both apps running locally (demo member signed in without a password; replayed, reused, expired, forged and cookie-less tickets refused). Parliament's change is on its branch `sso-for-elections`, not merged.
 
 ## Context
 

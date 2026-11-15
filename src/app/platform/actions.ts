@@ -47,11 +47,15 @@ export async function savePlatformAction(fd: FormData) {
       apiKey: str(fd, "apiKey", 200) || undefined,
     });
   } else if (group === "sso") {
+    const parliamentUrl = str(fd, "parliamentUrl", 200).replace(/\/+$/, "");
+    const secret = str(fd, "secret", 300);
+    if (parliamentUrl && !/^https?:\/\/[^\s/]+/.test(parliamentUrl)) go("/platform/settings", "err", "The Parliament address must start with http:// or https://.");
+    if (secret && secret.length < 32) go("/platform/settings", "err", "The shared secret needs at least 32 characters. Generate it in Parliament.");
     await saveSettings("sso", {
       enabled: flag(fd, "enabled"),
-      parliamentUrl: str(fd, "parliamentUrl", 200).replace(/\/+$/, ""),
+      parliamentUrl,
       clientId: str(fd, "clientId", 80) || "polling-station",
-      secret: str(fd, "secret", 300) || undefined,
+      secret: secret || undefined,
       label: str(fd, "label", 60) || "USFC Parliament",
     });
   } else go("/platform/settings", "err", "Unknown settings group.");

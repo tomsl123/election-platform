@@ -326,6 +326,7 @@
     background: linear-gradient(color-mix(in srgb, var(--b-box, #1f3b2b) 70%, #fff), var(--b-box, #1f3b2b)); box-shadow: 0 2px 0 #0b1a11, 0 5px 8px rgba(0, 0, 0, 0.3); }
   & .deskcard .go:disabled, & .deskcard .bell:disabled { opacity: 0.55; cursor: progress; }
   & .deskcard .go.discord { background: linear-gradient(#7984f5, #5865f2); color: #fff; box-shadow: 0 2px 0 #3c45a5; }
+  & .deskcard .go.quiet { background: transparent; color: var(--b-ink, #23201c); box-shadow: inset 0 0 0 1.5px currentColor; }
   & .deskcard .bell { color: #3d2c0b; background: linear-gradient(color-mix(in srgb, var(--brass) 55%, #fff), color-mix(in srgb, var(--brass) 88%, #000)); box-shadow: 0 2px 0 #6e5210, 0 5px 8px rgba(0, 0, 0, 0.3); }
   & .deskcard .bell svg { width: 26px; height: 26px; fill: currentColor; stroke: currentColor; stroke-width: 1.6; transform-origin: 50% 10%; }
   & .deskcard .bell.ring svg { animation: st-bell 0.8s ease-in-out; }

@@ -21,6 +21,7 @@ export type DeskProps = {
   districts: { setName: string; list: Array<{ id: string; name: string; code: string }> } | null;
   account: { name: string } | null;
   loginHref: string;
+  sso: { href: string; label: string } | null;
   discordHref: string | null;
   prefill: { code?: string; link?: string };
   admit: (a: Admission) => void;
@@ -282,9 +283,16 @@ export function Desk(p: DeskProps) {
               </button>
             </>
           ) : (
-            <a className="go" href={p.loginHref}>
-              {t("desk.signIn")}
-            </a>
+            <>
+              {p.sso ? (
+                <a className="go" href={p.sso.href}>
+                  {t("desk.parliament", { label: p.sso.label })}
+                </a>
+              ) : null}
+              <a className={p.sso ? "go quiet" : "go"} href={p.loginHref}>
+                {t("desk.signIn")}
+              </a>
+            </>
           )
         ) : route === "DISCORD" ? (
           p.discordHref ? (
