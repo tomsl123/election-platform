@@ -8,6 +8,7 @@ import { emailKey, isEmail, normaliseEmail } from "@/lib/email";
 import { Problem } from "@/lib/problem";
 import { applyImport, assertUnlocked, stageImport, type StagedImport } from "@/lib/districts";
 import { parseDistrictFile } from "@/lib/district-file";
+import { storeImage } from "@/lib/uploads";
 
 async function officer(fd: FormData) {
   const slug = str(fd, "org");
@@ -27,8 +28,11 @@ export async function partyAction(fd: FormData) {
       await db.option.updateMany({ where: { partyId: id }, data: { partyId: null } });
       await db.party.deleteMany({ where: { id, orgId: org.id } });
     } else {
-      const data = { name: str(fd, "name", 120), abbr: str(fd, "abbr", 12), color: HEX.test(str(fd, "color")) ? str(fd, "color") : "#23201c", symbol: str(fd, "symbol", 20) };
+      const data: { name: string; abbr: string; color: string; symbol: string; logoId?: string | null } = { name: str(fd, "name", 120), abbr: str(fd, "abbr", 12), color: HEX.test(str(fd, "color")) ? str(fd, "color") : "#23201c", symbol: str(fd, "symbol", 20) };
       if (!data.name || !data.abbr) throw new Problem("A party needs a name and an abbreviation.");
+      if (flag(fd, "removeLogo")) data.logoId = null;
+      const logo = fd.get("logo");
+      if (logo instanceof File && logo.size > 0) data.logoId = (await storeImage(org.id, logo)).id;
       if (op === "save") await db.party.updateMany({ where: { id, orgId: org.id }, data });
       else await db.party.create({ data: { ...data, orgId: org.id, position: await db.party.count({ where: { orgId: org.id } }) } });
     }

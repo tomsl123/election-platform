@@ -111,6 +111,7 @@ model Party {
   abbr     String
   color    String       @default("#23201c")
   symbol   String       @default("") // built-in symbol key
+  logoId   String? // Upload id of an optional logo; shown instead of the symbol
   position Int          @default(0)
 }
 

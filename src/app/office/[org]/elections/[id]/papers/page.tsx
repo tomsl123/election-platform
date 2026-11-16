@@ -2,12 +2,12 @@ import "../../../../../station.css";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { atLeast, requireOffice } from "@/lib/auth";
-import { electionInclude, isEditable, stationContests } from "@/lib/elections";
+import { electionInclude, isEditable, partyLogos, stationContests } from "@/lib/elections";
 import { orgBrand } from "@/lib/org";
 import { brandStyle } from "@/lib/brand";
 import { getDict } from "@/i18n";
 import { parseRule } from "@/lib/types";
-import { SYMBOLS, Sym } from "@/components/Symbol";
+import { PartyMark, SYMBOLS, Sym } from "@/components/Symbol";
 import { Check, Empty, Field, Sheet, StatusStamp } from "@/components/office/ui";
 import { ConfirmSubmit, ShowWhen, Submit } from "@/components/office/client";
 import { PaperPreview } from "@/components/office/PaperPreview";
@@ -139,6 +139,7 @@ export default async function PapersPage({ params }: { params: Promise<{ org: st
   const { org: slug, id } = await params;
   const { org, role } = await requireOffice(slug);
   const e = await db.election.findFirst({ where: { id, orgId: org.id }, include: electionInclude });
+  const logos = await partyLogos(org.id);
   if (!e) notFound();
   const [parties, districts] = await Promise.all([
     db.party.findMany({ where: { orgId: org.id }, orderBy: { position: "asc" } }),
@@ -161,7 +162,7 @@ export default async function PapersPage({ params }: { params: Promise<{ org: st
       ) : null}
 
       {e.contests.map((c, i) => {
-        const preview = stationContests([c], c.scope === "PER_DISTRICT" ? (c.options.find((o) => o.districtId)?.districtId ?? null) : null)[0];
+        const preview = stationContests([c], c.scope === "PER_DISTRICT" ? (c.options.find((o) => o.districtId)?.districtId ?? null) : null, logos)[0];
         const pending = c.options.filter((o) => o.status === "PENDING");
         return (
           <section key={c.id} id={c.id} className="split">
@@ -235,7 +236,12 @@ export default async function PapersPage({ params }: { params: Promise<{ org: st
                   <details key={o.id} className="opt">
                     <summary>
                       <span className="symcell" style={{ color: o.color }}>
-                        <Sym name={o.symbol} />
+                        {o.photoId ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img className="logo" src={`/api/files/${o.photoId}`} alt="" />
+                        ) : (
+                          <PartyMark logoId={o.partyId ? logos[o.partyId] : null} symbol={o.symbol} />
+                        )}
                       </span>
                       <span>
                         {o.name} <span className="muted small">{o.subtitle}</span>

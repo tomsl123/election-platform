@@ -162,12 +162,18 @@ export function BallotPaper(p: PaperProps) {
             {contest.options.map((o) => (
               <li key={o.id} style={{ ["--opt" as string]: o.color }}>
                 <span className="sy" style={{ color: o.color }}>
+                  {/* eslint-disable @next/next/no-img-element */}
                   {o.photoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={o.photoUrl} alt="" />
+                    <>
+                      <img src={o.photoUrl} alt="" />
+                      {o.logoUrl ? <img className="badge" src={o.logoUrl} alt="" /> : null}
+                    </>
+                  ) : o.logoUrl ? (
+                    <img className="logo" src={o.logoUrl} alt="" />
                   ) : (
                     <Sym name={o.symbol} />
                   )}
+                  {/* eslint-enable @next/next/no-img-element */}
                 </span>
                 <span className="nm">
                   {o.name}

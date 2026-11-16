@@ -8,7 +8,7 @@ import { decrypt, encrypt, hmac, randomToken, safeEqual } from "@/lib/crypto";
 import { emailKeyHash, hasMx, isDisposable, isEmail, maskEmail, normaliseEmail } from "@/lib/email";
 import { admit, passCookie, PASS_MINUTES, type AdmitResult } from "@/lib/desk";
 import { BallotError, castSitting } from "@/lib/ballot";
-import { stationContests, electionInclude } from "@/lib/elections";
+import { electionInclude, partyLogos, stationContests } from "@/lib/elections";
 import { identityCandidates } from "@/lib/roll";
 import { codeHash } from "@/lib/roll";
 import { createToken, findToken, sixDigits } from "@/lib/tokens";
@@ -71,7 +71,7 @@ async function finish(r: AdmitResult, ctx: NonNullable<Awaited<ReturnType<typeof
   return {
     ok: true,
     admission: {
-      contests: stationContests(ctx.e.contests, r.line.districtId),
+      contests: stationContests(ctx.e.contests, r.line.districtId, await partyLogos(ctx.org.id)),
       hall: r.outcome === "HOLD" ? "envelope" : ctx.e.transparency === "SHOW_OF_HANDS" ? "board" : "box",
       voterName: r.line.displayName,
     },

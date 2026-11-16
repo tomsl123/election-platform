@@ -3,7 +3,8 @@ import { resolve } from "node:path";
 import nodemailer from "nodemailer";
 import type { SmtpConfig } from "./settings";
 
-export type Mail = { to: string; subject: string; text: string; html: string };
+export type MailAttachment = { filename: string; content: Buffer; contentType: string; /** set for images shown inside the HTML body */ cid?: string };
+export type Mail = { to: string; subject: string; text: string; html: string; attachments?: MailAttachment[] };
 
 export async function deliverMail(smtp: SmtpConfig, mail: Mail): Promise<void> {
   if (!smtp.enabled) throw new Error("E-mail delivery is switched off.");
@@ -12,8 +13,12 @@ export async function deliverMail(smtp: SmtpConfig, mail: Mail): Promise<void> {
     // Development mailbox: nothing leaves the machine.
     const dir = resolve(/*turbopackIgnore: true*/ process.cwd(), process.env.MAILBOX_DIR || "./data/mailbox");
     await mkdir(dir, { recursive: true });
-    const name = `${new Date().toISOString().replace(/[:.]/g, "-")}-${mail.to.replace(/[^\w.@-]+/g, "_")}.txt`;
-    await writeFile(resolve(dir, name), `To: ${mail.to}\nSubject: ${mail.subject}\n\n${mail.text}\n`);
+    const base = `${new Date().toISOString().replace(/[:.]/g, "-")}-${mail.to.replace(/[^\w.@-]+/g, "_")}`;
+    // Files attached for the reader are kept beside the message; images shown inside the HTML are not.
+    const files = (mail.attachments ?? []).filter((a) => !a.cid).map((a) => ({ ...a, stored: `${base}-${a.filename.replace(/[^\w.-]+/g, "_")}` }));
+    const listed = files.length ? `\n\nAttached: ${files.map((a) => a.stored).join(", ")}` : "";
+    await writeFile(resolve(dir, `${base}.txt`), `To: ${mail.to}\nSubject: ${mail.subject}\n\n${mail.text}${listed}\n`);
+    for (const a of files) await writeFile(resolve(dir, a.stored), a.content);
     return;
   }
 
@@ -37,6 +42,7 @@ export async function deliverMail(smtp: SmtpConfig, mail: Mail): Promise<void> {
       subject: mail.subject,
       text: mail.text,
       html: mail.html,
+      attachments: mail.attachments?.map((a) => ({ filename: a.filename, content: a.content, contentType: a.contentType, ...(a.cid ? { cid: a.cid, contentDisposition: "inline" as const } : {}) })),
     });
   } finally {
     transport.close();

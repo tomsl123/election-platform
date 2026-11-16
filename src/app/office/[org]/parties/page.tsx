@@ -1,15 +1,16 @@
 import { db } from "@/lib/db";
 import { atLeast, requireOffice } from "@/lib/auth";
-import { SYMBOLS, Sym } from "@/components/Symbol";
-import { Empty, Field, Sheet } from "@/components/office/ui";
+import { PartyMark, SYMBOLS } from "@/components/Symbol";
+import { Check, Empty, Field, Sheet } from "@/components/office/ui";
 import { ConfirmSubmit, Submit } from "@/components/office/client";
 import { partyAction } from "../standing-actions";
 
 export const metadata = { title: "Parties" };
 export const dynamic = "force-dynamic";
 
-function PartyFields({ p }: { p?: { name: string; abbr: string; color: string; symbol: string } }) {
+function PartyFields({ p }: { p?: { name: string; abbr: string; color: string; symbol: string; logoId: string | null } }) {
   return (
+    <>
     <div className="fields" style={{ gridTemplateColumns: "2fr 1fr auto 1fr" }}>
       <Field label="Name">
         <input name="name" defaultValue={p?.name} required />
@@ -31,6 +32,13 @@ function PartyFields({ p }: { p?: { name: string; abbr: string; color: string; s
         </select>
       </Field>
     </div>
+    <div className="fields">
+      <Field label="Logo" hint="Optional. Shown instead of the symbol; PNG, JPEG or WebP, at most 2 MB">
+        <input type="file" name="logo" accept="image/png,image/jpeg,image/webp" />
+      </Field>
+      {p?.logoId ? <Check name="removeLogo" label="Remove the logo" /> : null}
+    </div>
+    </>
   );
 }
 
@@ -41,13 +49,13 @@ export default async function PartiesPage({ params }: { params: Promise<{ org: s
   const officer = atLeast(role, "OFFICER");
   return (
     <>
-      <Sheet title="Parties" lede="Their colour and symbol are printed beside their candidates and lists.">
+      <Sheet title="Parties" lede="Their colour and symbol, or their logo, are printed beside their candidates and lists.">
         {parties.length === 0 ? <Empty>No parties.</Empty> : null}
         {parties.map((p) => (
           <details key={p.id} className="opt">
             <summary>
               <span className="symcell" style={{ color: p.color }}>
-                <Sym name={p.symbol} />
+                <PartyMark logoId={p.logoId} symbol={p.symbol} />
               </span>
               <span>
                 <b>{p.abbr}</b> {p.name}

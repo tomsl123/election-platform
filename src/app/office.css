@@ -142,6 +142,7 @@
   & .swatch { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: -2px; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3); }
   & .symcell { display: inline-grid; place-items: center; width: 28px; height: 28px; }
   & .symcell .sym { width: 22px; height: 22px; }
+  & .symcell .logo { width: 28px; height: 28px; object-fit: contain; border-radius: 3px; }
   /* Symbol picker: radio tiles */
   & .sympick { display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 6px; }
   & .sympick label { position: relative; display: grid; place-items: center; height: 38px; border-radius: 4px; cursor: pointer; background: #fffaf0; box-shadow: inset 0 0 0 1px rgba(35, 32, 28, 0.25); }

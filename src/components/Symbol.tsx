@@ -63,3 +63,11 @@ export function Sym({ name, className = "", title }: { name: string; className?:
     </svg>
   );
 }
+
+/** A party's logo when it has one, else its built-in symbol. */
+export function PartyMark({ logoId, symbol, className = "", title }: { logoId?: string | null; symbol: string; className?: string; title?: string }) {
+  if (logoId)
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img className={`logo ${className}`} src={`/api/files/${logoId}`} alt={title ?? ""} />;
+  return <Sym name={symbol} className={className} title={title} />;
+}

@@ -84,3 +84,15 @@ export async function hasMx(raw: string): Promise<boolean> {
     return !(code === "ENOTFOUND" || code === "ENODATA");
   }
 }
+
+/** Addresses from a free-form field: commas, semicolons, spaces or new lines between them. */
+export function parseAddresses(raw: string): { ok: string[]; bad: string[] } {
+  const ok = new Set<string>();
+  const bad: string[] = [];
+  for (const part of raw.split(/[\s,;]+/).map((s) => s.replace(/^<|>$/g, "").trim()).filter(Boolean)) {
+    const e = normaliseEmail(part);
+    if (isEmail(e)) ok.add(e);
+    else bad.push(part);
+  }
+  return { ok: [...ok], bad };
+}

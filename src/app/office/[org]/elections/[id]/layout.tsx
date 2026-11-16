@@ -34,6 +34,7 @@ export default async function ElectionLayout({ children, params }: { children: R
           tabs={[
             { href: `${b}/setup`, label: "Setup" },
             { href: `${b}/papers`, label: pending ? `Papers (${pending} nominated)` : "Papers" },
+            { href: `${b}/candidates`, label: "Candidates" },
             { href: `${b}/roll`, label: e.access === "INVITE" ? "Roll" : "Register" },
             { href: `${b}/run`, label: "Polling day" },
             { href: `${b}/held`, label: held ? `Held (${held})` : "Held" },

@@ -8,6 +8,8 @@ export type StationOption = {
   color: string;
   symbol: string;
   photoUrl: string | null;
+  /** the party's logo, when the option belongs to a party that has one */
+  logoUrl?: string | null;
   list: string[];
 };
 

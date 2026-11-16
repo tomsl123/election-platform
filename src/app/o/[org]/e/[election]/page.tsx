@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { getAuth } from "@/lib/auth";
 import { currentPass, passCookie } from "@/lib/desk";
-import { electionInclude, stationContests } from "@/lib/elections";
+import { electionInclude, partyLogos, stationContests } from "@/lib/elections";
 import { getOrg, orgBrand } from "@/lib/org";
 import { brandStyle } from "@/lib/brand";
 import { getDict, t } from "@/i18n";
@@ -61,7 +61,7 @@ export default async function StationPage({ params, searchParams }: { params: Pr
 
   // A voter who has checked in and still holds a good pass goes straight back into the booth.
   const pass = sign ? null : await currentPass(e.id, (await cookies()).get(passCookie(e.id))?.value);
-  const contests = stationContests(e.contests, pass?.line.districtId ?? null);
+  const contests = stationContests(e.contests, pass?.line.districtId ?? null, await partyLogos(org.id));
   const routes = parseRoutes(e.routes);
   const auth = routes.includes("ACCOUNT") ? await getAuth() : null;
   const platform = await getSettings();

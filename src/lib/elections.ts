@@ -302,8 +302,14 @@ export async function moveOption(org: Organisation, optionId: string, dir: -1 | 
 
 type ContestWithOptions = Contest & { options: Array<Option & { listCandidates: ListCandidate[] }> };
 
+/** Party id → logo upload id, for the parties of one organisation that have a logo. */
+export async function partyLogos(orgId: string): Promise<Record<string, string>> {
+  const rows = await db.party.findMany({ where: { orgId, logoId: { not: null } }, select: { id: true, logoId: true } });
+  return Object.fromEntries(rows.map((p) => [p.id, p.logoId!]));
+}
+
 /** The papers for one voter: approved options only, and the options of their own district on per-district papers. */
-export function stationContests(contests: ContestWithOptions[], districtId: string | null): StationContest[] {
+export function stationContests(contests: ContestWithOptions[], districtId: string | null, logos: Record<string, string> = {}): StationContest[] {
   return contests
     .map((c) => {
       const rule = parseRule(c.rule);
@@ -323,6 +329,7 @@ export function stationContests(contests: ContestWithOptions[], districtId: stri
           color: o.color,
           symbol: o.symbol,
           photoUrl: o.photoId ? `/api/files/${o.photoId}` : null,
+          logoUrl: o.partyId && logos[o.partyId] ? `/api/files/${logos[o.partyId]}` : null,
           list: o.listCandidates.map((l) => l.name),
         })),
       };
