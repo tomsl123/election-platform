@@ -3,7 +3,8 @@
 // One paper per UCTV election (single, multi or list). Races are keyed by the district's UCTV race id or code, so the
 // districts land on their own hexes; our counties and map (drawn in UCTV and imported here) go with them.
 // A national paper is one race whose counties are the districts, each with its exact votes. UCTV builds that do not
-// know `votes`, `seats` or `seatsWon` drop them and spread the race totals themselves.
+// know `votes`, `seats` or `seatsWon` drop them and spread the race totals themselves. A send keeps what the UCTV show set up:
+// its vote multiplier, party logos, candidate photos, and each race's timing and call mode.
 import type { Organisation } from "@prisma/client";
 import { db } from "./db";
 import { orgUctv } from "./org";
@@ -41,22 +42,27 @@ export function toScenario(
   if (!c) throw new Problem("No paper in this election can be shown on UCTV (only single, multi and list papers are sent).");
   const geo: Geography = opts.geo ?? { districts: result.districts.map((d) => ({ ...d, ref: "", counties: [] })), map: null };
   const geoOf = (id: string) => geo.districts.find((d) => d.id === id);
-  const outParties = new Map<string, UctvParty>(parties.map((p) => [p.id, { id: p.id, name: clip(p.name, 80), abbr: clip(p.abbr, 8) || "?", color: p.color, logo: "" }]));
+  // What the UCTV show already set up is kept: party logos, candidate photos, each race's timing and call mode.
+  const theirParty = new Map((existing?.parties ?? []).map((p) => [p.id, p]));
+  const theirRace = new Map((existing?.races ?? []).map((r) => [r.id, r]));
+  const theirCandidate = new Map((existing?.races ?? []).flatMap((r) => r.candidates ?? []).map((k) => [k.id, k]));
+  const logo = (id: string) => theirParty.get(id)?.logo ?? "";
+  const outParties = new Map<string, UctvParty>(parties.map((p) => [p.id, { id: p.id, name: clip(p.name, 80), abbr: clip(p.abbr, 8) || "?", color: p.color, logo: logo(p.id) }]));
 
   const candidatesOf = (options: typeof c.options, tally: { totals: Record<string, number>; seats?: Record<string, number> }): UctvCandidate[] =>
     options.map((o) => {
       const partyId = o.partyId && outParties.has(o.partyId) ? o.partyId : `opt-${o.id}`;
-      if (!outParties.has(partyId)) outParties.set(partyId, { id: partyId, name: clip(o.name, 80), abbr: clip(o.name.replace(/[^A-Za-z]/g, "").toUpperCase(), 4) || "IND", color: o.color, logo: "" });
-      const out: UctvCandidate = { id: clip(o.id, 64), name: clip(o.name, 80), partyId, photo: "", rawVotes: tally.totals[o.id] ?? 0 };
+      if (!outParties.has(partyId)) outParties.set(partyId, { id: partyId, name: clip(o.name, 80), abbr: clip(o.name.replace(/[^A-Za-z]/g, "").toUpperCase(), 4) || "IND", color: o.color, logo: logo(partyId) });
+      const out: UctvCandidate = { id: clip(o.id, 64), name: clip(o.name, 80), partyId, photo: theirCandidate.get(clip(o.id, 64))?.photo ?? "", rawVotes: tally.totals[o.id] ?? 0 };
       if (tally.seats) out.seatsWon = tally.seats[o.id] ?? 0;
       return out;
     });
   const race = (id: string, name: string, candidates: UctvCandidate[], counties: UctvCounty[], seats?: number): UctvRace => ({
     id: clip(id, 64),
     name: clip(name, 60),
-    pollCloseSec: 0,
-    countDurationSec: 120,
-    callMode: "standard",
+    pollCloseSec: theirRace.get(clip(id, 64))?.pollCloseSec ?? 0,
+    countDurationSec: theirRace.get(clip(id, 64))?.countDurationSec ?? 120,
+    callMode: theirRace.get(clip(id, 64))?.callMode ?? "standard",
     ...(seats && seats > 1 ? { seats } : {}),
     candidates,
     counties,
@@ -100,17 +106,17 @@ export function toScenario(
   let map: unknown = ourMap;
   let fresh = false;
   if (!ourMap) {
-    const theirs = new Map((existing?.races ?? []).map((r) => [r.id, r]));
-    if (existing && races.every((r) => theirs.get(r.id)?.counties?.length)) {
+    if (existing && races.every((r) => theirRace.get(r.id)?.counties?.length)) {
       // Counties with exact votes (a national paper's districts) stay ours; plain ones take UCTV's painted counties.
-      for (const r of races) if (!r.counties.some((k) => k.votes)) r.counties = theirs.get(r.id)!.counties;
+      for (const r of races) if (!r.counties.some((k) => k.votes)) r.counties = theirRace.get(r.id)!.counties;
       map = existing.map;
     } else {
       map = { cols: 8, rows: 8, cells: {} };
       fresh = true;
     }
   }
-  const settings = { ...(existing?.settings ?? {}), voteMultiplier: 1, rule: rules[c.id]?.win === "MAJORITY_RUNOFF" ? "two_round" : "plurality" };
+  // UCTV's vote multiplier stays: scaling a small election up to a nation's size on air is the show's choice.
+  const settings = { ...(existing?.settings ?? {}), rule: rules[c.id]?.win === "MAJORITY_RUNOFF" ? "two_round" : "plurality" };
   return { scenario: { parties: [...outParties.values()], races, map, settings }, fresh, contestTitle: c.title };
 }
 

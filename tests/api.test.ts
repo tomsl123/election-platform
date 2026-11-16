@@ -109,7 +109,8 @@ describe("UCTV", () => {
       ["Simons", "ca", 2],
       ["Independent Joe", "opt-b", 1],
     ]);
-    expect(scenario.settings).toMatchObject({ voteMultiplier: 1, rule: "plurality", nightStart: "21:00" });
+    // UCTV's multiplier stays: the show scales a small election up to a nation on air.
+    expect(scenario.settings).toMatchObject({ voteMultiplier: 8750, rule: "plurality", nightStart: "21:00" });
     expect(scenario.parties.map((p) => p.id).sort()).toEqual(["ca", "opt-b"]);
     // A UCTV race with another id is not ours: UCTV is asked to draw a map instead of us borrowing its counties.
     const other = toScenario(result, [], { pm: { win: "PLURALITY" } }, { ...existing, races: [{ ...existing.races[0], id: "old" }] });
@@ -186,6 +187,37 @@ describe("UCTV", () => {
     ]);
     expect(scenario.map).toEqual({ cols: 8, rows: 8, cells: { "0,0": "SNOW", "1,0": "SNOW", "2,0": "SAND", "3,0": "SAND" } });
     expect(scenario.settings.rule).toBe("two_round");
+  });
+
+  it("keeps what the UCTV show set up: race timing and call mode, photos, logos, multiplier", () => {
+    const result = cliffResult({
+      id: "pm",
+      title: "Prime Minister",
+      method: "SINGLE",
+      scope: "PER_DISTRICT",
+      seats: 1,
+      options: [opt("a", "d1", "red"), opt("b", "d2", "blue")],
+      national: tally({ a: 3, b: 2 }),
+      districts: { d1: tally({ a: 3 }), d2: tally({ b: 2 }) },
+    });
+    const existing = {
+      parties: [{ id: "red", name: "Old red", abbr: "OR", color: "#000000", logo: "/uploads/red.png" }],
+      races: [{ id: "race_snow", name: "Snow", pollCloseSec: 90, countDurationSec: 45, callMode: "hold", candidates: [{ id: "a", name: "A", partyId: "red", photo: "/uploads/a.jpg", rawVotes: 0 }], counties: [{ id: "s-n", name: "North Snow" }] }],
+      map: { cols: 8, rows: 8, cells: {} },
+      settings: { voteMultiplier: 12000, rule: "two_round" },
+    };
+    const { scenario } = toScenario(result, [{ id: "red", name: "Red", abbr: "R", color: "#c22a2a" }, { id: "blue", name: "Blue", abbr: "B", color: "#2456a6" }], {}, existing, { geo: cliffs });
+    const [snow, sand] = scenario.races;
+    expect([snow.pollCloseSec, snow.countDurationSec, snow.callMode]).toEqual([90, 45, "hold"]);
+    expect([sand.pollCloseSec, sand.countDurationSec, sand.callMode]).toEqual([0, 120, "standard"]); // new to UCTV: defaults
+    expect(snow.candidates[0].photo).toBe("/uploads/a.jpg");
+    expect(sand.candidates[0].photo).toBe("");
+    // Our party names and colours win; UCTV's logo stays.
+    expect(scenario.parties.find((p) => p.id === "red")).toEqual({ id: "red", name: "Red", abbr: "R", color: "#c22a2a", logo: "/uploads/red.png" });
+    expect(scenario.parties.find((p) => p.id === "blue")?.logo).toBe("");
+    expect(scenario.settings).toEqual({ voteMultiplier: 12000, rule: "plurality" });
+    // A new UCTV election (nothing there yet) sends no multiplier, so UCTV's own default applies.
+    expect(toScenario(result, [], {}, null, { geo: cliffs }).scenario.settings).toEqual({ rule: "plurality" });
   });
 
   it("only sends the chosen paper", () => {
