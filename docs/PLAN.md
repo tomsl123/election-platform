@@ -18,6 +18,7 @@ Tick a phase only when its "Done when" list passes and its commit exists. Note a
 - [x] Phase 11 — Public API, webhooks, UCTV feed
 - [x] Phase 12 — Hardening and delivery
 - [x] Phase 13 — Shared sign-in: Parliament vouches
+- [x] Phase 14 — District files, maps and UCTV sync
 
 ## Deviations
 
@@ -33,6 +34,7 @@ Tick a phase only when its "Done when" list passes and its commit exists. Note a
 - Phase 11: the API docs page is drawn in the office look instead of Swagger UI (the CSP forbids third-party scripts). The UCTV conversion is unit-tested, but sending to a running UCTV instance was not tested (it would write into that project's data). Sending keeps UCTV's existing counties and map, and asks UCTV to draw a map only for an empty UCTV election.
 - Phase 12: the Docker image was verified later (`docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build`): migrations on start, healthy, `/setup` on an empty volume, demo seeded inside the container, a public sitting cast through desk, booth and box, closed, counted, recounted against the seal, receipt checked, data kept across a restart. Three faults found only in the image were fixed: `/forgot` was prerendered at build time against a database that does not exist there (the sign-in group is now dynamic); the IP lists and the development mailbox were written under `/app`, which is read-only for the app user and not on the volume (`IPLIST_DIR` and `MAILBOX_DIR` now point into `/data`). The security pass found and fixed one gap: the polling-day actions did not check that the election belonged to the office's organisation. Each station scene now announces itself through an `aria-live` line.
 - Phase 13: Parliament's `requireAuth` gained an optional return path so the authorize page can send a member through sign-in and back. An account with two-step sign-in still asks for its authenticator code after Parliament vouches. Tickets may live at most 120 seconds and be at most 30 seconds ahead of our clock. Tested end to end with both apps running locally (demo member signed in without a password; replayed, reused, expired, forged and cookie-less tickets refused). Parliament's change is on its branch `sso-for-elections`, not merged.
+- Phase 14: an import matches districts by UCTV race id, then code, then name (so a first pull from UCTV finds the existing Cliffs), and never changes an existing code. A CSV whose lines for one district give different seats is refused. The recount fault the snapshot fixes was districts *added* after the count (renames never touched the recount). Running elections from before Phase 14 get their snapshot the first time their set is looked at. On the results map a tied district stays neutral. On the desk, neighbouring districts get different paper shades so they can be told apart before one is picked. UCTV accepts at most 200 districts and 60-character names (we allow 500 and 80). Not tested: HTTP between two running apps (pulling from a live UCTV, sending to it). Instead, our district file and our race payloads were checked in-process against the `districts-sync` branch's own schema, import, export and engine (codes, county ids and map survive the round trip; exact per-district votes and list seats come out of UCTV's count). The JSON export leaves `map` out when there is none, because UCTV refuses `null`. Checked in the browser with a test election "Map check" in the development database (now cancelled). UCTV's change is on its branch `districts-sync` (two commits, made in a separate session), not merged; that repo is left checked out on it.
 
 ## Context
 
@@ -134,8 +136,9 @@ model User { /* as Parliament; rename isTechAdmin -> isPlatformAdmin; add ssoSou
 model OrgMember { id; orgId; userId; role /* OWNER | OFFICER | OBSERVER */; @@unique([orgId, userId]) }
 
 model Party { id; orgId; name; abbr; color; symbol String @default("") /* built-in key or upload id */; position Int }
-model DistrictSet { id; orgId; name /* "Cliffs", "Senate districts" */ }
-model District { id; setId; name; code; seats Int @default(1); position Int }
+model DistrictSet { id; orgId; name /* "Cliffs", "Senate districts" */; map String @default("") /* UCTV HexMap JSON */; source String @default("{}") /* where it was imported from */ }
+model District { id; setId; name; code; seats Int @default(1); position Int; counties String @default("[]") /* [{id,name}] */; ref String @default("") /* UCTV race id */ }
+model DistrictImport { id; orgId; setId String?; payload String /* parsed district file */; createdBy; createdAt } // preview between upload and apply
 
 // The organisation's standing register of voters (invite-only elections draw from it).
 model RegisterEntry {
@@ -168,7 +171,8 @@ model Election {
   eligibleCount Int @default(0)
   result String?; resultHash String?; seal String?; chainHead String?
   countedAt DateTime?; certifiedAt DateTime?; certifiedById String?
-  uctvElectionId String?
+  uctvElectionId String?; uctvContestId String?   // the one paper sent to UCTV
+  districts String?   // frozen snapshot of the district set (districts, counties, map, hash), taken when the election leaves DRAFT
   reminderSentAt DateTime?; createdById String?; createdAt DateTime @default(now())
   @@unique([orgId, slug]); @@index([status, opensAt]); @@index([status, closesAt])
 }
@@ -503,6 +507,19 @@ Protocol (signed short-lived ticket, no back channel):
 **Done when:** with both apps running locally, a Parliament member lands signed in on the election platform without a password; a replayed or expired ticket is refused; both repos have their commit.
 
 ---
+
+## Phase 14 — District files, maps and UCTV sync (touches `C:\OtherProjects\uctv-elections` on its branch `districts-sync`)
+
+Maps are drawn in UCTV (it has the hex painter); this app imports them. A district set is frozen once an election using it leaves DRAFT.
+
+- **District file** (`src/lib/district-file.ts`, pure): `{ format: "usfc-districts", version: 1, name, districts: [{ code, name, seats?, ref?, counties?: [{id, name}] }], map?: HexMap }`, where `HexMap` is UCTV's `{cols, rows, cells: {"q,r": countyId}}`. `parseDistrictFile` also reads UCTV's export (`app: "UCTV_ELECTIONS"`), a bare UCTV scenario, UCTV's legacy file (`constituencies`) and CSV `code,name,seats,county` (one row per county). Validation: unique codes and county ids, cells only on known counties, ≤ 500 districts, grid ≤ 120×120. `planDistrictImport` matches by code, then `ref`, and lists add / change / remove / kept-because-used / map changed.
+- **Freezing** (`src/lib/districts.ts`): leaving DRAFT writes `Election.districts` (snapshot + hash); going back to DRAFT clears it. A set is locked while an election using it is NOMINATIONS, READY, OPEN or CLOSED (or non-draft without a snapshot). Counting and recounting read the snapshot, so a later rename does not break the recount.
+- **Office**: the Districts page shows counties, a map preview, the source and the lock. Import a file (upload or paste) or pull from a UCTV election id → preview page `districts/import/[id]` (diff, "remove districts not in the file", Apply / Discard). Export per set as JSON or CSV.
+- **Map**: `src/components/HexMap.tsx` (port of UCTV's, no painting). The results page draws the snapshot's map filled with each district's leader, each district a link (`?d=`). The desk (SELF) shows the map above the crest tiles; tapping a district picks its tile; the tiles stay the keyboard path.
+- **UCTV push by key**: one paper per UCTV election (`Election.uctvContestId`). Per-district paper → one race per district, `id = ref || code`, our counties and map. National paper → one race, one county per district (cells remapped), exact per-county `votes`. List paper → race `seats`, candidate `seatsWon`. Without our map: keep UCTV's when its race ids match ours, otherwise UCTV draws one.
+- **UCTV branch** (`districts-sync`, local, not merged): optional `County.votes`, `Race.seats`, `Candidate.seatsWon` (the engine uses exact county votes and seat counts; the board shows seats); `POST /admin/elections` accepts a district file; `GET /admin/elections/:id/districts` exports one.
+
+**Done when:** a CSV and a UCTV export import with a correct preview; export round-trips; a set used by a scheduled election refuses edits; the results page and the desk draw the map (desktop and 375×812, keyboard); with UCTV running on a scratch data folder, a district file goes to UCTV, comes back with the same codes, and a counted election shows per-district races on their own hexes and exact numbers for a national paper.
 
 ## Verification (whole project)
 

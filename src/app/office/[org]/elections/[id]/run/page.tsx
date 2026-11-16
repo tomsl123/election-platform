@@ -5,6 +5,7 @@ import { atLeast, requireOffice } from "@/lib/auth";
 import { electionInclude, isEditable, openProblems } from "@/lib/elections";
 import { fmtDateTime } from "@/lib/format";
 import { orgUctv } from "@/lib/org";
+import { sendable } from "@/lib/uctv";
 import { Sheet, StatusStamp } from "@/components/office/ui";
 import { ConfirmSubmit, LiveRefresh, Submit } from "@/components/office/client";
 import { runAction } from "../../actions";
@@ -117,13 +118,25 @@ export default async function RunPage({ params }: { params: Promise<{ org: strin
           ) : null}
         </Sheet>
         {orgUctv(org).enabled && officer ? (
-          <Sheet title={<h2>UCTV</h2>} lede="The UCTV election that shows this one on election night.">
+          <Sheet title={<h2>UCTV</h2>} lede="The UCTV election that shows this one on election night: one paper per UCTV election. Districts go to their own hexes; a national paper shows exact numbers per district on UCTV builds that support it.">
             <form action={runAction} className="row">
               {hidden}
               <label className="field" style={{ flex: 1 }}>
                 <span>UCTV election id</span>
                 <input name="uctvElectionId" defaultValue={e.uctvElectionId ?? ""} />
               </label>
+              {sendable(e.contests).length > 1 ? (
+                <label className="field" style={{ flex: 1 }}>
+                  <span>Paper</span>
+                  <select name="uctvContestId" defaultValue={e.uctvContestId ?? sendable(e.contests)[0]!.id}>
+                    {sendable(e.contests).map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.title}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
               <Submit className="btn sm" name="op" value="uctvId">
                 Save
               </Submit>

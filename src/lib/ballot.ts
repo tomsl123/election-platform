@@ -2,6 +2,7 @@
 // Modelled on USFC Parliament's voting.ts (hash chain, shuffled urn, HMAC seal).
 import type { Election, Prisma } from "@prisma/client";
 import { db, withWriteLock, type Tx } from "./db";
+import { districtsFor } from "./districts";
 import { audit, auditTx } from "./audit";
 import { canonical, hmac, normaliseReceipt, randomId, randomReceipt, sha256 } from "./crypto";
 import { buildResult, type Result } from "./count";
@@ -177,7 +178,7 @@ export async function countElection(electionId: string, actor: Actor): Promise<{
         }
         const counted = await tx.ballot.findMany({ where: { electionId, status: "COUNTED" }, select: { contestId: true, districtId: true, data: true } });
         const chainHead = (await tx.ballot.findFirst({ where: { electionId, seq: { not: null } }, orderBy: { seq: "desc" } }))?.hash ?? genesis(electionId);
-        const result = buildResult(e, counted, await districtsOf(tx, e.districtSetId), await turnoutOf(tx, e));
+        const result = buildResult(e, counted, await districtsFor(tx, e), await turnoutOf(tx, e));
         const json = canonical(result);
         const resultHash = sha256(`${json}|${chainHead}`);
         await tx.election.update({ where: { id: electionId }, data: { status: "COUNTED", countedAt: new Date(), result: json, resultHash, chainHead, seal: hmac("result-seal", resultHash) } });
@@ -193,10 +194,6 @@ export async function countElection(electionId: string, actor: Actor): Promise<{
   return { counted: true, message: "Counted and sealed." };
 }
 
-async function districtsOf(tx: Tx | typeof db, setId: string | null) {
-  return setId ? tx.district.findMany({ where: { setId }, orderBy: { position: "asc" } }) : [];
-}
-
 async function turnoutOf(tx: Tx | typeof db, e: Election) {
   const voted = await tx.rollEntry.findMany({ where: { electionId: e.id, status: "VOTED" }, select: { districtId: true } });
   const byDistrict: Record<string, number> = {};
@@ -210,7 +207,7 @@ export async function liveResult(electionId: string): Promise<Result | null> {
   const e = await db.election.findUnique({ where: { id: electionId }, include: electionInclude });
   if (!e) return null;
   const counted = await db.ballot.findMany({ where: { electionId, status: "COUNTED" }, select: { contestId: true, districtId: true, data: true } });
-  return buildResult(e, counted, await districtsOf(db, e.districtSetId), await turnoutOf(db, e));
+  return buildResult(e, counted, await districtsFor(db, e), await turnoutOf(db, e));
 }
 
 /** Recomputes the chain and the count from the stored ballots, and checks the seal. */
@@ -240,7 +237,7 @@ export async function verifyElection(electionId: string): Promise<{ ok: boolean;
       const unchained = await db.ballot.count({ where: { electionId, status: "COUNTED", seq: null } });
       if (unchained) problems.push(`${unchained} counted ballots are outside the chain.`);
       const stored = JSON.parse(e.result) as Result;
-      const again = buildResult(e, counted, await districtsOf(db, e.districtSetId), stored.turnout);
+      const again = buildResult(e, counted, await districtsFor(db, e), stored.turnout);
       if (canonical(again.contests) !== canonical(stored.contests)) problems.push("Counting the ballots again gives a different result from the sealed one.");
     }
   }

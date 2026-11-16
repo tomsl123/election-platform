@@ -100,7 +100,7 @@ describe("UCTV", () => {
         { id: "ref", title: "Referendum", method: "YESNO", scope: "NATIONAL", seats: 1, options: [], national: { valid: 0, blank: 0, totals: {}, outcome: "NONE", winners: [] }, districts: {} },
       ],
     };
-    const existing = { parties: [], races: [{ id: "old", name: "Old", pollCloseSec: 0, countDurationSec: 120, callMode: "standard", candidates: [], counties: [{ id: "k1", name: "North" }] }], map: { cols: 4, rows: 4, cells: { "0,0": "k1" } }, settings: { voteMultiplier: 8750, rule: "two_round", nightStart: "21:00" } };
+    const existing = { parties: [], races: [{ id: "pm", name: "Old", pollCloseSec: 0, countDurationSec: 120, callMode: "standard", candidates: [], counties: [{ id: "k1", name: "North" }] }], map: { cols: 4, rows: 4, cells: { "0,0": "k1" } }, settings: { voteMultiplier: 8750, rule: "two_round", nightStart: "21:00" } };
     const { scenario, fresh } = toScenario(result, [{ id: "ca", name: "Cliffs Assemble", abbr: "CA", color: "#d99a12" }], { pm: { win: "PLURALITY" } }, existing);
     expect(fresh).toBe(false);
     expect(scenario.races).toHaveLength(1);
@@ -111,5 +111,87 @@ describe("UCTV", () => {
     ]);
     expect(scenario.settings).toMatchObject({ voteMultiplier: 1, rule: "plurality", nightStart: "21:00" });
     expect(scenario.parties.map((p) => p.id).sort()).toEqual(["ca", "opt-b"]);
+    // A UCTV race with another id is not ours: UCTV is asked to draw a map instead of us borrowing its counties.
+    const other = toScenario(result, [], { pm: { win: "PLURALITY" } }, { ...existing, races: [{ ...existing.races[0], id: "old" }] });
+    expect(other.fresh).toBe(true);
+    expect(other.scenario.races[0].counties).toEqual([{ id: "pm-c", name: "National" }]);
+  });
+
+  const cliffs = {
+    districts: [
+      { id: "d1", code: "SNOW", name: "Snowbelle", ref: "race_snow", counties: [{ id: "s-n", name: "North Snow" }, { id: "s-s", name: "South Snow" }] },
+      { id: "d2", code: "SAND", name: "Eternal Sand", ref: "", counties: [{ id: "a-1", name: "Dunes" }] },
+    ],
+    map: { cols: 8, rows: 8, cells: { "0,0": "s-n", "1,0": "s-s", "2,0": "a-1", "3,0": "a-1" } },
+  };
+  const opt = (id: string, districtId: string | null, partyId: string) => ({ id, name: id.toUpperCase(), subtitle: "", color: "#123456", symbol: "", partyId, districtId, list: [] });
+  const tally = (totals: Record<string, number>, seats?: Record<string, number>) => ({ valid: Object.values(totals).reduce((a, b) => a + b, 0), blank: 0, totals, outcome: "ELECTED" as const, winners: [], ...(seats ? { seats } : {}) });
+  const cliffResult = (contest: Result["contests"][number]): Result => ({
+    electionId: "e",
+    ballots: 10,
+    turnout: { voted: 10, eligible: 0, byDistrict: {} },
+    districts: [
+      { id: "d1", name: "Snowbelle", code: "SNOW" },
+      { id: "d2", name: "Eternal Sand", code: "SAND" },
+    ],
+    contests: [contest],
+  });
+
+  it("keys per-district races by UCTV race id or code, and sends our counties, map and seats", () => {
+    const result = cliffResult({
+      id: "ng",
+      title: "National Gathering",
+      method: "PARTY_LIST",
+      scope: "PER_DISTRICT",
+      seats: 4,
+      options: [opt("r1", "d1", "red"), opt("b1", "d1", "blue"), opt("r2", "d2", "red"), opt("b2", "d2", "blue")],
+      national: tally({ r1: 3, b1: 1, r2: 1, b2: 2 }),
+      districts: { d1: tally({ r1: 3, b1: 1 }, { r1: 3, b1: 1 }), d2: tally({ r2: 1, b2: 2 }, { r2: 0, b2: 2 }) },
+    });
+    const parties = [
+      { id: "red", name: "Red", abbr: "R", color: "#c22a2a" },
+      { id: "blue", name: "Blue", abbr: "B", color: "#2456a6" },
+    ];
+    // UCTV's races in a different order must not matter.
+    const existing = { parties: [], races: [{ id: "SAND", name: "x", pollCloseSec: 0, countDurationSec: 1, callMode: "standard", candidates: [], counties: [{ id: "zzz", name: "Wrong" }] }], map: { cols: 4, rows: 4, cells: {} }, settings: {} };
+    const { scenario, fresh } = toScenario(result, parties, {}, existing, { geo: cliffs });
+    expect(fresh).toBe(false);
+    expect(scenario.races.map((r) => r.id)).toEqual(["race_snow", "SAND"]);
+    expect(scenario.races[0].counties.map((k) => k.id)).toEqual(["s-n", "s-s"]);
+    expect(scenario.races[1].counties.map((k) => k.id)).toEqual(["a-1"]);
+    expect(scenario.map).toEqual(cliffs.map);
+    expect(scenario.races[0].seats).toBe(4);
+    expect(scenario.races[1].candidates.map((k) => [k.id, k.rawVotes, k.seatsWon])).toEqual([
+      ["r2", 1, 0],
+      ["b2", 2, 2],
+    ]);
+  });
+
+  it("sends a national paper as one race whose counties are the districts, with exact votes", () => {
+    const result = cliffResult({
+      id: "pm",
+      title: "Prime Minister",
+      method: "SINGLE",
+      scope: "NATIONAL",
+      seats: 1,
+      options: [opt("a", null, "red"), opt("b", null, "blue")],
+      national: tally({ a: 6, b: 4 }),
+      districts: { d1: tally({ a: 5, b: 1 }), d2: tally({ a: 1, b: 3 }) },
+    });
+    const { scenario } = toScenario(result, [], { pm: { win: "MAJORITY_RUNOFF" } }, null, { geo: cliffs });
+    expect(scenario.races).toHaveLength(1);
+    expect(scenario.races[0].counties).toEqual([
+      { id: "SNOW", name: "Snowbelle", votes: { a: 5, b: 1 } },
+      { id: "SAND", name: "Eternal Sand", votes: { a: 1, b: 3 } },
+    ]);
+    expect(scenario.map).toEqual({ cols: 8, rows: 8, cells: { "0,0": "SNOW", "1,0": "SNOW", "2,0": "SAND", "3,0": "SAND" } });
+    expect(scenario.settings.rule).toBe("two_round");
+  });
+
+  it("only sends the chosen paper", () => {
+    const base = cliffResult({ id: "pm", title: "Prime Minister", method: "SINGLE", scope: "NATIONAL", seats: 1, options: [opt("a", null, "red")], national: tally({ a: 1 }), districts: {} });
+    base.contests.push({ ...base.contests[0], id: "vp", title: "Vice" });
+    expect(toScenario(base, [], {}, null, { contestId: "vp" }).contestTitle).toBe("Vice");
+    expect(toScenario(base, [], {}, null, { contestId: "gone" }).contestTitle).toBe("Prime Minister");
   });
 });

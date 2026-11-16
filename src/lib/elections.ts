@@ -5,6 +5,7 @@ import { db } from "./db";
 import { audit } from "./audit";
 import { Problem } from "./problem";
 import { bump } from "./live";
+import { freezeDistricts, thawDistricts } from "./districts";
 import { slugify, type Actor } from "./action";
 import type { StationContest } from "./marks";
 import {
@@ -365,6 +366,9 @@ export async function openProblems(e: FullElection): Promise<string[]> {
 
 async function setStatus(e: Election, status: ElectionStatus, actor: Actor, action: string, extra: Prisma.ElectionUpdateInput = {}) {
   await db.election.update({ where: { id: e.id }, data: { status, ...extra } });
+  // The district set is frozen for the election once it leaves draft, and thawed if it goes back.
+  if (e.status === "DRAFT" && status !== "DRAFT" && status !== "CANCELLED") await freezeDistricts(e.id);
+  else if (status === "DRAFT") await thawDistricts(e.id);
   await audit({ orgId: e.orgId, actorId: actor.id, actorLabel: actor.label, action, entity: "Election", entityId: e.id, ip: actor.ip });
   bump(e.id);
 }

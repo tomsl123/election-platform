@@ -11,6 +11,7 @@ import { createToken, findToken, sixDigits } from "./tokens";
 import { Problem } from "./problem";
 import { parseRule } from "./types";
 import type { Actor } from "./action";
+import { freezeDistricts, thawDistricts } from "./districts";
 
 export type NominationInput = { contestId: string; districtId: string | null; name: string; subtitle: string; partyId: string | null; symbol: string; color: string; statement: string; email: string; photoId: string | null };
 
@@ -21,6 +22,7 @@ export async function nominationClock(now: Date) {
   const toOpen = await db.election.findMany({ where: { status: "DRAFT", nominationsOpenAt: { lte: now }, nominationsCloseAt: { gt: now } } });
   for (const e of toOpen) {
     await db.election.update({ where: { id: e.id }, data: { status: "NOMINATIONS" } });
+    await freezeDistricts(e.id);
     await audit({ orgId: e.orgId, actorLabel: "the clock", action: "nominations.opened", entity: "Election", entityId: e.id });
   }
   const toClose = await db.election.findMany({ where: { status: "NOMINATIONS", nominationsCloseAt: { lte: now } } });
@@ -31,6 +33,7 @@ export async function openNominations(org: Organisation, electionId: string, act
   const e = await db.election.findFirstOrThrow({ where: { id: electionId, orgId: org.id } });
   if (e.status !== "DRAFT") throw new Problem("Nominations open only from a draft.");
   await db.election.update({ where: { id: e.id }, data: { status: "NOMINATIONS" } });
+  await freezeDistricts(e.id);
   await audit({ orgId: org.id, actorId: actor.id, actorLabel: actor.label, action: "nominations.opened", entity: "Election", entityId: e.id, ip: actor.ip });
 }
 
@@ -41,6 +44,7 @@ export async function closeNominations(electionId: string, actor: Actor) {
   const full = await getElection(e.orgId, e.id);
   const ready = !!e.opensAt && full !== null && (await openProblems(full)).length === 0;
   await db.election.update({ where: { id: e.id }, data: { status: ready ? "READY" : "DRAFT" } });
+  if (!ready) await thawDistricts(e.id);
   await audit({ orgId: e.orgId, actorId: actor.id, actorLabel: actor.label, action: "nominations.closed", entity: "Election", entityId: e.id, details: { next: ready ? "READY" : "DRAFT" } });
 }
 

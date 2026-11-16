@@ -4,6 +4,8 @@
 // When the clerk finds the line, it is written in and crossed, and the papers are handed over.
 import { useEffect, useRef, useState } from "react";
 import { Crest } from "@/components/Crest";
+import { HexMap } from "@/components/HexMap";
+import type { HexMap as HexMapData } from "@/lib/district-file";
 import { useT } from "@/i18n/client";
 import type { Route } from "@/lib/types";
 import { deviceEvidence, type DeviceEvidence } from "./device";
@@ -18,7 +20,7 @@ export type DeskProps = {
   crestId: string | null;
   routes: Route[];
   needName: boolean;
-  districts: { setName: string; list: Array<{ id: string; name: string; code: string }> } | null;
+  districts: { setName: string; list: Array<{ id: string; name: string; code: string }>; map?: { map: HexMapData; districtOf: Record<string, string> } | null } | null;
   account: { name: string } | null;
   loginHref: string;
   sso: { href: string; label: string } | null;
@@ -44,6 +46,9 @@ const ICONS: Record<string, React.ReactNode> = {
 };
 
 type Step = "form" | "code" | "admitted";
+
+/** Neighbouring districts on the desk map in slightly different shades of the paper. */
+const paperTone = (i: number) => `hsl(${38 + (i % 3) * 6} ${22 + (i % 2) * 8}% ${62 + ((i * 7) % 5) * 4}%)`;
 
 export function Desk(p: DeskProps) {
   const t = useT();
@@ -211,13 +216,21 @@ export function Desk(p: DeskProps) {
             {p.districts ? (
               <fieldset className="tiles">
                 <legend>{t("desk.district", { set: p.districts.setName })}</legend>
-                {p.districts.list.map((d) => (
-                  <label key={d.id} className={districtId === d.id ? "on" : ""}>
-                    <input type="radio" name="district" value={d.id} checked={districtId === d.id} onChange={() => setDistrictId(d.id)} required />
-                    <b>{d.code}</b>
-                    <span>{d.name}</span>
-                  </label>
-                ))}
+                {p.districts.map ? (
+                  <div className="desk-map">
+                    {/* Tap a district on the map, or use the tiles below (the keyboard path). */}
+                    <HexMap map={p.districts.map.map} districtOf={p.districts.map.districtOf} fill={(did) => (did === districtId ? "var(--map-on)" : paperTone(p.districts!.list.findIndex((d) => d.id === did)))} onPick={(did) => { setDistrictId(did); sfx.tick(); }} selected={districtId || null} decorative />
+                  </div>
+                ) : null}
+                <div className="tile-grid">
+                  {p.districts.list.map((d) => (
+                    <label key={d.id} className={districtId === d.id ? "on" : ""}>
+                      <input type="radio" name="district" value={d.id} checked={districtId === d.id} onChange={() => setDistrictId(d.id)} required />
+                      <b>{d.code}</b>
+                      <span>{d.name}</span>
+                    </label>
+                  ))}
+                </div>
               </fieldset>
             ) : null}
             <button type="submit" className={`bell ${ringing ? "ring" : ""}`} disabled={busy}>

@@ -1,6 +1,5 @@
 // Builds the result of an election from its counted ballots. Deterministic: the same ballots
 // always give the same JSON, so a recount can compare byte for byte.
-import type { District } from "@prisma/client";
 import { parseRule } from "./types";
 import { rollUp, tallyContest, type ContestTally, type Totals } from "./tally";
 import type { FullElection } from "./elections";
@@ -35,7 +34,7 @@ function seated(options: ResultOption[], seats: Totals | undefined): Record<stri
   return out;
 }
 
-export function buildResult(e: FullElection, ballots: CountedBallot[], districts: District[], turnout: Result["turnout"]): Result {
+export function buildResult(e: FullElection, ballots: CountedBallot[], districts: Array<{ id: string; name: string; code: string }>, turnout: Result["turnout"]): Result {
   const contests: ResultContest[] = e.contests.map((c) => {
     const rule = parseRule(c.rule);
     const options: ResultOption[] = c.options

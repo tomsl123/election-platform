@@ -3,9 +3,11 @@
 import { db } from "@/lib/db";
 import { audit } from "@/lib/audit";
 import { requireOffice } from "@/lib/auth";
-import { actorFrom, explain, go, int, str } from "@/lib/action";
+import { actorFrom, explain, flag, go, int, str } from "@/lib/action";
 import { emailKey, isEmail, normaliseEmail } from "@/lib/email";
 import { Problem } from "@/lib/problem";
+import { applyImport, assertUnlocked, stageImport, type StagedImport } from "@/lib/districts";
+import { parseDistrictFile } from "@/lib/district-file";
 
 async function officer(fd: FormData) {
   const slug = str(fd, "org");
@@ -48,6 +50,7 @@ export async function districtAction(fd: FormData) {
       await db.districtSet.create({ data: { orgId: org.id, name } });
     } else if (op === "removeSet") {
       const setId = str(fd, "set");
+      await assertUnlocked(setId);
       const used = await db.election.count({ where: { orgId: org.id, districtSetId: setId } });
       if (used) throw new Problem("An election uses this set; it cannot be removed.");
       await db.districtSet.deleteMany({ where: { id: setId, orgId: org.id } });
@@ -55,6 +58,7 @@ export async function districtAction(fd: FormData) {
       const setId = str(fd, "set");
       const set = await db.districtSet.findFirst({ where: { id: setId, orgId: org.id } });
       if (!set) throw new Problem("That set does not exist.");
+      await assertUnlocked(set.id);
       const data = { name: str(fd, "name", 80), code: str(fd, "code", 12).toUpperCase(), seats: int(fd, "seats", 1, 1, 10000) };
       if (!data.name || !data.code) throw new Problem("A district needs a name and a code.");
       if (op === "add") await db.district.create({ data: { ...data, setId, position: await db.district.count({ where: { setId } }) } });
@@ -62,6 +66,7 @@ export async function districtAction(fd: FormData) {
     } else if (op === "remove") {
       const d = await db.district.findFirst({ where: { id: str(fd, "district"), set: { orgId: org.id } } });
       if (d) {
+        await assertUnlocked(d.setId);
         const used = await db.option.count({ where: { districtId: d.id } });
         if (used) throw new Problem("Options on a paper belong to this district; it cannot be removed.");
         await db.registerDistrict.deleteMany({ where: { districtId: d.id } });
@@ -73,6 +78,47 @@ export async function districtAction(fd: FormData) {
   }
   await audit({ orgId: org.id, actorId: actor.id, actorLabel: actor.label, action: `district.${op}`, ip: actor.ip });
   go(back, "ok", "Saved.");
+}
+
+/** District files: stage an upload or a UCTV pull for preview, then apply or discard it. */
+export async function districtImportAction(fd: FormData) {
+  const { org, slug, actor } = await officer(fd);
+  const back = `/office/${slug}/districts`;
+  const op = str(fd, "op");
+  let next = back;
+  let msg = "";
+  try {
+    if (op === "stage" || op === "pull") {
+      let staged: StagedImport;
+      if (op === "pull") {
+        const { pullFromUctv } = await import("@/lib/uctv");
+        const id = str(fd, "uctvElectionId", 64);
+        staged = { kind: "uctv", label: `UCTV election ${id}`, parsed: await pullFromUctv(org, id) };
+      } else {
+        let text = str(fd, "text", 2_000_000);
+        let label = "pasted text";
+        const file = fd.get("file");
+        if (file instanceof File && file.size > 0) {
+          if (file.size > 20_000_000) throw new Problem("The file is larger than 20 MB.");
+          text = await file.text();
+          label = file.name.slice(0, 80);
+        }
+        staged = { kind: "file", label, parsed: parseDistrictFile(text, label) };
+      }
+      const id = await stageImport(org, str(fd, "set") || null, staged, actor);
+      next = `${back}/import/${id}`;
+    } else if (op === "apply") {
+      const done = await applyImport(org, str(fd, "import"), flag(fd, "removeMissing"), actor);
+      msg = done.message;
+    } else if (op === "discard") {
+      await db.districtImport.deleteMany({ where: { id: str(fd, "import"), orgId: org.id } });
+      msg = "Import discarded.";
+    }
+  } catch (err) {
+    go(op === "apply" ? `${back}/import/${str(fd, "import")}` : back, "err", explain(err));
+  }
+  if (next !== back) go(next);
+  go(back, "ok", msg || "Saved.");
 }
 
 async function setDistricts(entryId: string, orgId: string, fd: FormData) {

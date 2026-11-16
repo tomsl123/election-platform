@@ -49,6 +49,8 @@ export async function createRunoff(electionId: string, result: Result): Promise<
       opensAt,
       closesAt,
       createdById: e.createdById,
+      // A second round runs on the districts of the first.
+      districts: opensAt && closesAt ? e.districts : null,
     },
   });
   // Only the papers that need a second round, with only their finalists; a second round decides by plurality.

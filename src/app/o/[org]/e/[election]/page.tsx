@@ -12,6 +12,8 @@ import { fmtDateTime } from "@/lib/format";
 import { parseRoutes } from "@/lib/types";
 import { getSettings } from "@/lib/settings";
 import type { SignSpec } from "@/components/station/PollingStation";
+import { mapFor } from "@/lib/districts";
+import { countyIndex } from "@/components/HexMap";
 import { StationClient } from "./StationClient";
 
 export const dynamic = "force-dynamic";
@@ -66,7 +68,8 @@ export default async function StationPage({ params, searchParams }: { params: Pr
   let districts = null;
   if (e.districtAssign === "SELF" && e.districtSetId) {
     const set = await db.districtSet.findUnique({ where: { id: e.districtSetId }, include: { districts: { orderBy: { position: "asc" } } } });
-    if (set) districts = { setName: set.name, list: set.districts.map((x) => ({ id: x.id, name: x.name, code: x.code })) };
+    const geo = set ? await mapFor(e) : null;
+    if (set) districts = { setName: set.name, list: set.districts.map((x) => ({ id: x.id, name: x.name, code: x.code })), map: geo ? { map: geo.map, districtOf: countyIndex(geo.districts) } : null };
   }
 
   return (

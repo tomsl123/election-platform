@@ -7,6 +7,7 @@ import { getOrg, orgBrand } from "@/lib/org";
 import { getDict, t } from "@/i18n";
 import { fmtDateTime } from "@/lib/format";
 import { visibleResult } from "@/lib/results";
+import { mapFor } from "@/lib/districts";
 import { Crest } from "@/components/Crest";
 import { Hallway } from "@/components/Hallway";
 import { ResultsView } from "@/components/ResultsView";
@@ -27,6 +28,7 @@ export default async function ResultsPage({ params, searchParams }: { params: Pr
   const { kind, result } = await visibleResult(e);
   const voted = kind === "sealed" && e.turnoutLive ? await db.rollEntry.count({ where: { electionId: e.id, status: { in: ["VOTED", "HELD"] } } }) : null;
   const base = `/o/${org.slug}/e/${e.slug}`;
+  const geo = result ? await mapFor(e) : null;
   const runoff = await db.election.findFirst({ where: { parentId: e.id, status: { not: "DRAFT" } }, select: { slug: true, title: true } });
   return (
     <Hallway org={org} subtitle={e.title}>
@@ -56,7 +58,7 @@ export default async function ResultsPage({ params, searchParams }: { params: Pr
             {voted !== null ? <p className="small">{t(dict, "board.turnout", { n: voted })}</p> : null}
           </div>
         ) : (
-          <ResultsView result={result} dict={dict} district={d && result.districts.some((x) => x.id === d) ? d : null} hrefFor={(x) => (x ? `?d=${x}` : "?")} />
+          <ResultsView result={result} dict={dict} district={d && result.districts.some((x) => x.id === d) ? d : null} hrefFor={(x) => (x ? `?d=${x}` : "?")} map={geo} />
         )}
         <p className="small muted no-print" style={{ marginTop: 18, display: "flex", gap: 16, flexWrap: "wrap" }}>
           {e.countedAt ? <span>{fmtDateTime(e.countedAt, org.timezone)}</span> : null}

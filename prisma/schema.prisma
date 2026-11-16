@@ -119,6 +119,8 @@ model DistrictSet {
   orgId     String
   org       Organisation @relation(fields: [orgId], references: [id], onDelete: Cascade)
   name      String // "Cliffs", "Senate districts"
+  map       String       @default("") // JSON HexMap (UCTV's shape): { cols, rows, cells: { "q,r": countyId } }
+  source    String       @default("{}") // JSON DistrictSource: where the set was last imported from
   districts District[]
 }
 
@@ -130,8 +132,22 @@ model District {
   code     String
   seats    Int         @default(1)
   position Int         @default(0)
+  counties String      @default("[]") // JSON [{ id, name }]: sub-areas drawn on the map
+  ref      String      @default("") // the race id in UCTV, when imported from there
 
   @@unique([setId, code])
+}
+
+// A parsed district file waiting for an officer to apply it (preview between upload and apply).
+model DistrictImport {
+  id        String   @id @default(cuid())
+  orgId     String
+  setId     String?
+  payload   String // JSON DistrictFile
+  createdBy String   @default("")
+  createdAt DateTime @default(now())
+
+  @@index([orgId])
 }
 
 // The organisation's standing register of voters (invite-only elections draw from it).
@@ -206,6 +222,8 @@ model Election {
   certifiedAt        DateTime?
   certifiedById      String?
   uctvElectionId     String?
+  uctvContestId      String? // the paper sent to UCTV (one per UCTV election)
+  districts          String? // JSON DistrictSnapshot, frozen when the election leaves DRAFT
   reminderSentAt     DateTime?
   heldDigestAt       DateTime?
   createdById        String?

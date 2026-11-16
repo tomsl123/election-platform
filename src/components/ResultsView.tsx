@@ -6,6 +6,24 @@ import type { ContestTally } from "@/lib/tally";
 import type { Dict } from "@/i18n";
 import { t } from "@/i18n";
 import { Sym } from "./Symbol";
+import { HexMap, countyIndex } from "./HexMap";
+import type { HexMap as HexMapData, County } from "@/lib/district-file";
+
+export type ResultsMap = { map: HexMapData; districts: Array<{ id: string; counties: County[] }> };
+
+/** Colour of the leading option of the first paper counted per district, for the map. */
+function leaders(result: Result): Record<string, string> {
+  const c = result.contests.find((x) => Object.keys(x.districts).length > 0);
+  const out: Record<string, string> = {};
+  if (!c) return out;
+  for (const [did, tally] of Object.entries(c.districts)) {
+    const score = (id: string) => (c.method === "PARTY_LIST" ? (tally.seats?.[id] ?? 0) * 1e9 : 0) + (c.method === "SCORE" ? (tally.sums?.[id] ?? 0) : (tally.totals[id] ?? 0));
+    const [lead, next] = [...c.options].filter((o) => score(o.id) > 0).sort((a, b) => score(b.id) - score(a.id));
+    // A tie leads nobody: it keeps the neutral colour of an uncounted district.
+    if (lead && (!next || score(next.id) < score(lead.id))) out[did] = lead.color;
+  }
+  return out;
+}
 
 const pct = (n: number, d: number) => (d ? `${Math.round((n / d) * 1000) / 10}%` : "0%");
 
@@ -123,8 +141,9 @@ function Tally({ c, tally, options, dict }: { c: ResultContest; tally: ContestTa
   );
 }
 
-export function ResultsView({ result, dict, district, hrefFor }: { result: Result; dict: Dict; district: string | null; hrefFor: (d: string | null) => string }) {
+export function ResultsView({ result, dict, district, hrefFor, map }: { result: Result; dict: Dict; district: string | null; hrefFor: (d: string | null) => string; map?: ResultsMap | null }) {
   const has = result.districts.length > 0 && result.contests.some((c) => Object.keys(c.districts).length > 0);
+  const lead = has && map ? leaders(result) : {};
   return (
     <div className="count">
       <p className="turnout">
@@ -132,6 +151,18 @@ export function ResultsView({ result, dict, district, hrefFor }: { result: Resul
         {result.turnout.eligible ? ` / ${result.turnout.eligible} (${pct(result.turnout.voted, result.turnout.eligible)})` : ""}
         {district && result.turnout.byDistrict[district] !== undefined ? ` · ${result.turnout.byDistrict[district]} here` : ""}
       </p>
+      {has && map ? (
+        <div className="district-map">
+          <HexMap
+            map={map.map}
+            districtOf={countyIndex(map.districts)}
+            fill={(did) => lead[did] ?? "#d9d2c3"}
+            nameOf={(did) => result.districts.find((d) => d.id === did)?.name ?? ""}
+            hrefFor={(did) => hrefFor(did)}
+            selected={district}
+          />
+        </div>
+      ) : null}
       {has ? (
         <nav className="dtabs" aria-label="Districts">
           <Link href={hrefFor(null)} aria-current={!district ? "page" : undefined}>

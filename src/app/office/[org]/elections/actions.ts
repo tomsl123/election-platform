@@ -295,7 +295,7 @@ export async function runAction(fd: FormData) {
       await cancelElection(org, id, actor);
       msg = "The election is cancelled.";
     } else if (op === "uctvId") {
-      await db.election.updateMany({ where: { id, orgId: org.id }, data: { uctvElectionId: str(fd, "uctvElectionId", 80) || null } });
+      await db.election.updateMany({ where: { id, orgId: org.id }, data: { uctvElectionId: str(fd, "uctvElectionId", 80) || null, ...(fd.has("uctvContestId") ? { uctvContestId: str(fd, "uctvContestId", 40) || null } : {}) } });
       msg = "UCTV election id saved.";
     } else if (op === "uctv") {
       const { sendToUctv } = await import("@/lib/uctv");
